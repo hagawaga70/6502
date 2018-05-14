@@ -1,0 +1,17 @@
+package gfxElemente
+
+//import "strconv"
+import "image"
+type impl struct {
+	seite [255]byte
+	register byte
+}
+
+func NewGfxElement() *impl {
+	var gfxElement *impl
+	gfxElement = new(impl)
+	return gfxElement
+}
+func (gfxElement *impl) AbbildSpeicherseite(x1,y1 uint16,groesse uint,seiteninhalt []byte) {
+	
+	   
