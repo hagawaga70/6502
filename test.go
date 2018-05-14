@@ -1,5 +1,6 @@
 package main
 
+//test git
 import . "./speicher"
 import . "./register"
 import . "gfx"
@@ -58,24 +59,24 @@ func main() {
 		registerXdatenAlt = registerXdaten
 		// <<---------------------------------------------------------------------------------------------------
 
-		// Anzeigen des Y-Registers -------------------------------------------------------------------------
+		// Anzeigen des Y-Registers ----------------------------------------------------------------------------
 		takte = y_register.SchreibenByte(byte(12 + i))
 		registerYdaten, takte = y_register.LesenByte()
 		gfxElement01.AbbildRegister(1630, 40, "Y-Register", registerYdaten, registerYdatenAlt)
 		registerYdatenAlt = registerYdaten
 		// <<---------------------------------------------------------------------------------------------------
 
-		// Anzeigen des Akkus -------------------------------------------------------------------------
+		// Anzeigen des Akkus ----------------------------------------------------------------------------------
 		takte = akku.SchreibenByte(byte(2 + i))
 		akkuDaten, takte = akku.LesenByte()
-		gfxElement01.AbbildRegister(300, 950, "Akku", akkuDaten, akkuDatenAlt)
+		gfxElement01.AbbildRegister(1630, 70, "Akku", akkuDaten, akkuDatenAlt)
 		akkuDatenAlt = akkuDaten
 		// <<---------------------------------------------------------------------------------------------------
 
-		// Anzeigen des Stapelzeigers -------------------------------------------------------------------------
+		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
 		takte = stapelzeiger.SchreibenByte(byte(15 + i))
 		stapelzeigerDaten, takte = stapelzeiger.LesenByte()
-		gfxElement01.AbbildRegister(300, 1000, "Stapelzeiger", stapelzeigerDaten, stapelzeigerDatenAlt)
+		gfxElement01.AbbildRegister(1630, 100, "Stapelzeiger", stapelzeigerDaten, stapelzeigerDatenAlt)
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
 		UpdateAn()
