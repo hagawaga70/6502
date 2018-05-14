@@ -18,6 +18,7 @@ func main() {
 	var y_register Register = NewRegister()
 	var stapelzeiger = NewRegister()
 	var akku = NewRegister()
+	//var statusbits = NewRegister()
 	var gfxElement01 GfxElement = NewGfxElement()
 	var takte int
 	var speicher []byte
@@ -79,6 +80,14 @@ func main() {
 		gfxElement01.AbbildRegister(1630, 100, "Stapelzeiger", stapelzeigerDaten, stapelzeigerDatenAlt)
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
+
+		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
+		takte = stapelzeiger.SchreibenByte(byte(15 + i))
+		stapelzeigerDaten, takte = stapelzeiger.LesenByte()
+		gfxElement01.AbbildRegister(1630, 100, "Stapelzeiger", stapelzeigerDaten, stapelzeigerDatenAlt)
+		stapelzeigerDatenAlt = stapelzeigerDaten
+		// <<---------------------------------------------------------------------------------------------------
+
 		UpdateAn()
 		TastaturLesen1()
 		Cls()
