@@ -13,7 +13,7 @@ type Register interface {
 
 	// Vor.: -
 	// Erg.: Das Register ist neu beschrieben.Die Anzahl der benötigten Takte ist zurückgegeben.
-	//SetzeBit() (takte int)
-	//SetzeBitZurueck() (takte int)
-	//LeseBit() (takte int)
+	SetzeBit(pos uint) 	(takte int)
+	SetzeBitZurueck		(pos uint) 	(takte int)
+	LeseBit(pos uint) (bitstatus bool,takte int)
 }

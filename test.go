@@ -13,12 +13,14 @@ import . "./gfxElemente"
 import "fmt"
 
 func main() {
-	var speicher64k Speicher = NewSpeicher()
-	var x_register Register = NewRegister()
-	var y_register Register = NewRegister()
-	var stapelzeiger = NewRegister()
-	var akku = NewRegister()
-	//var statusbits = NewRegister()
+	var speicher64k Speicher 	= NewSpeicher()
+
+	var x_register Register 	= NewRegister()
+	var y_register Register 	= NewRegister()
+	var stapelzeiger 			= NewRegister()
+	var akku 					= NewRegister()
+	var statusbits 				= NewRegister()
+
 	var gfxElement01 GfxElement = NewGfxElement()
 	var takte int
 	var speicher []byte
@@ -33,23 +35,24 @@ func main() {
 	var stapelzeigerDatenAlt byte
 	var akkuDaten byte
 	var akkuDatenAlt byte
+	var statusFlagsAlt []int
 
-	Fenster(1900, 1200)
+	Fenster(1920, 1200)
 	for i := 0; i < 3; i++ {
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
 
 		takte = speicher64k.Schreiben([]int16{256, 259}, []byte{byte(10), byte(3), byte(4), byte(5)})
-		speicher, takte = speicher64k.Lesen([]int16{256, 511})
-		speicher2, takte = speicher64k.Lesen([]int16{0, 255})
-		speicher3, takte = speicher64k.Lesen([]int16{0, 255})
-		speicher4, takte = speicher64k.Lesen([]int16{0, 255})
+		speicher , 	takte = speicher64k.Lesen([]int16{256	, 511})
+		speicher2, 	takte = speicher64k.Lesen([]int16{0		, 255})
+		speicher3, 	takte = speicher64k.Lesen([]int16{0		, 255})
+		speicher4, 	takte = speicher64k.Lesen([]int16{0		, 255})
 		fmt.Println(speicher)
 		UpdateAus()
-		gfxElement01.AbbildSpeicherseite1(10, 10, 0, speicher2)
-		gfxElement01.AbbildSpeicherseite1(411, 10, 1, speicher)
-		gfxElement01.AbbildSpeicherseite1(812, 10, 2, speicher3)
-		gfxElement01.AbbildSpeicherseite1(1213, 10, 255, speicher4)
+		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher2		)	
+		gfxElement01.AbbildSpeicherseite1(411	, 10	, 1		, speicher		)
+		gfxElement01.AbbildSpeicherseite1(812	, 10	, 2		, speicher3		)
+		gfxElement01.AbbildSpeicherseite1(1213	, 10	, 255	, speicher4		)
 		//time.Sleep(1000000000)
 		fmt.Println(takte)
 		fmt.Println(speicher)
@@ -81,12 +84,23 @@ func main() {
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
 
-		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
-		takte = stapelzeiger.SchreibenByte(byte(15 + i))
-		stapelzeigerDaten, takte = stapelzeiger.LesenByte()
-		gfxElement01.AbbildRegister(1630, 100, "Stapelzeiger", stapelzeigerDaten, stapelzeigerDatenAlt)
-		stapelzeigerDatenAlt = stapelzeigerDaten
+		var flags []string = []string{"C","Z","I","D","B","-","V","N"}
+
+		// Anzeigen der Flags  ---------------------------------------------------------------------------------
+		var flagStatus bool
+		fmt.Println("-------------------------------------------------------------------------------------")
+
+		for  index,flag := range(flags){
+			flagStatus, takte =statusbits.LeseBit( uint(index))
+			fmt.Println(flagStatus)	
+			fmt.Println(flag)	
+			gfxElement01.AbbildFlag(1630, 130+index*30, "Stapelzeiger", flagstatus, flagStatusAlt[index])
+			flagStatusAlt[index]= flagstatus
+		}
 		// <<---------------------------------------------------------------------------------------------------
+		//takte = statusbits.SetzeBit(0)
+
+
 
 		UpdateAn()
 		TastaturLesen1()

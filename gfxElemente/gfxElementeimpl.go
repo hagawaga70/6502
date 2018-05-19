@@ -207,6 +207,18 @@ func (gfxElement *impl) AbbildRegister(x1, y1 uint16, name string, registerInhal
 	SchreibeFont(x1+labelOffset, y1, hex.EncodeToString([]byte{registerInhalt}))
 
 }
+func (gfxElement *impl) AbbildFlag(x1, y1 uint16, name string, flagStatus int) {
+	var label string 
+	var labelOffset uint16
+	Stiftfarbe(0, 81, 47)
+	SetzeFont("./font/LiberationMono-Regular.ttf", 24)
+	SchreibeFont(x1, y1, label + ": ")
+	Stiftfarbe(0, 0, 0)
+	labelOffset = 12 * 16
+	SchreibeFont(x1+labelOffset, y1, string(flagStatus))
+
+}
+
 
 func labelanpassung(label string) string {
 	var labelLaengeSoll int = 12
