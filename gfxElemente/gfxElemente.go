@@ -15,5 +15,5 @@ type GfxElement interface {
 	// Eff.: Der Registerinhalt und die Bezeichnung des Registers ist ins gfx-Fenster geschrieben.
 	AbbildRegister(x1, y1 uint16, name string, registerInhalt byte, registerInhaltAlt byte)
 	//--------------------------------------------------------------------
-	AbbildFlag(x1, y1 uint16, name string, flagStatus int, flagStatusAlt int)
+	AbbildFlag(x1, y1 uint16, label string, flagStatus int, flagStatusAlt int)
 }

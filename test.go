@@ -35,7 +35,10 @@ func main() {
 	var stapelzeigerDatenAlt byte
 	var akkuDaten byte
 	var akkuDatenAlt byte
-	var statusFlagsAlt []int
+	var flags []string = []string{"C","Z","I","D","B","-","V","N"}
+	var flagStatusBOOL bool
+	var flagStatusINT int 
+	var flagStatusAlt []int =[]int{0,0,0,0,0,0,0,0}
 
 	Fenster(1920, 1200)
 	for i := 0; i < 3; i++ {
@@ -84,21 +87,24 @@ func main() {
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
 
-		var flags []string = []string{"C","Z","I","D","B","-","V","N"}
 
 		// Anzeigen der Flags  ---------------------------------------------------------------------------------
-		var flagStatus bool
 		fmt.Println("-------------------------------------------------------------------------------------")
 
 		for  index,flag := range(flags){
-			flagStatus, takte =statusbits.LeseBit( uint(index))
-			fmt.Println(flagStatus)	
+			flagStatusBOOL, takte =statusbits.LeseBit( uint(index))
+			fmt.Println(flagStatusBOOL)	
 			fmt.Println(flag)	
-			gfxElement01.AbbildFlag(1630, 130+index*30, "Stapelzeiger", flagstatus, flagStatusAlt[index])
-			flagStatusAlt[index]= flagstatus
+			if flagStatusBOOL {
+				flagStatusINT = 1
+			}else{
+				flagStatusINT = 0
+			}
+			gfxElement01.AbbildFlag(1630, uint16(130+index*30), flag, flagStatusINT, flagStatusAlt[index])
+			flagStatusAlt[index]= flagStatusINT
 		}
 		// <<---------------------------------------------------------------------------------------------------
-		//takte = statusbits.SetzeBit(0)
+		takte = statusbits.SetzeBit(0)
 
 
 
