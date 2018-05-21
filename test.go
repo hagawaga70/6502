@@ -59,34 +59,46 @@ func main() {
 		//time.Sleep(1000000000)
 		fmt.Println(takte)
 		fmt.Println(speicher)
+
+
+		// Label Register-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(1630,10,"Register",24,0,0,255)
 		// Anzeigen des X-Registers -------------------------------------------------------------------------
-		takte = x_register.SchreibenByte(byte(5 + i))
 		registerXdaten, takte = x_register.LesenByte()
-		gfxElement01.AbbildRegister(1630, 10, "X-Register", registerXdaten, registerXdatenAlt)
+		gfxElement01.AbbildRegister(1630, 40, "X-Register", registerXdaten, registerXdatenAlt)
 		registerXdatenAlt = registerXdaten
+		takte = x_register.SchreibenByte(byte(5 + i))
 		// <<---------------------------------------------------------------------------------------------------
 
 		// Anzeigen des Y-Registers ----------------------------------------------------------------------------
-		takte = y_register.SchreibenByte(byte(12 + i))
+/*		takte = y_register.SchreibenByte(byte(12 + i))*/
 		registerYdaten, takte = y_register.LesenByte()
-		gfxElement01.AbbildRegister(1630, 40, "Y-Register", registerYdaten, registerYdatenAlt)
+		gfxElement01.AbbildRegister(1630, 70, "Y-Register", registerYdaten, registerYdatenAlt)
 		registerYdatenAlt = registerYdaten
 		// <<---------------------------------------------------------------------------------------------------
 
 		// Anzeigen des Akkus ----------------------------------------------------------------------------------
-		takte = akku.SchreibenByte(byte(2 + i))
 		akkuDaten, takte = akku.LesenByte()
-		gfxElement01.AbbildRegister(1630, 70, "Akku", akkuDaten, akkuDatenAlt)
+		gfxElement01.AbbildRegister(1630, 100, "Akku", akkuDaten, akkuDatenAlt)
 		akkuDatenAlt = akkuDaten
+		takte = akku.SchreibenByte(byte(2 + i))
 		// <<---------------------------------------------------------------------------------------------------
-
+		
+		// Label Stapelzeiger-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(1630,130,"Stapelzeiger",24,0,0,255)
 		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
-		takte = stapelzeiger.SchreibenByte(byte(15 + i))
+/*		takte = stapelzeiger.SchreibenByte(byte(15 + i))*/
 		stapelzeigerDaten, takte = stapelzeiger.LesenByte()
-		gfxElement01.AbbildRegister(1630, 100, "Stapelzeiger", stapelzeigerDaten, stapelzeigerDatenAlt)
+		gfxElement01.AbbildRegister(1630, 160, "SZ", stapelzeigerDaten, stapelzeigerDatenAlt)
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
+			
+		// Label ProgrammzählerFlags-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(1630,190,"Progammzähler",24,0,0,255)
 
+
+		// Label Flags-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(1630,220,"Flags",24,0,0,255)
 
 		// Anzeigen der Flags  ---------------------------------------------------------------------------------
 		fmt.Println("-------------------------------------------------------------------------------------")
@@ -100,11 +112,14 @@ func main() {
 			}else{
 				flagStatusINT = 0
 			}
-			gfxElement01.AbbildFlag(1630, uint16(130+index*30), flag, flagStatusINT, flagStatusAlt[index])
+			gfxElement01.AbbildFlag(1630, uint16(250+index*30), flag, flagStatusINT, flagStatusAlt[index])
 			flagStatusAlt[index]= flagStatusINT
 		}
 		// <<---------------------------------------------------------------------------------------------------
 		takte = statusbits.SetzeBit(0)
+		
+		// Label ProgrammzählerFlags-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(1630,190,"Progammzähler",24,0,0,255)
 
 
 

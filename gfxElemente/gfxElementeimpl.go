@@ -202,11 +202,24 @@ func (gfxElement *impl) AbbildRegister(x1, y1 uint16, name string, registerInhal
 	SetzeFont("./font/LiberationMono-Regular.ttf", 24)
 	label = labelanpassung(name)
 	SchreibeFont(x1, y1, label)
-	Stiftfarbe(0, 0, 0)
+	if registerInhaltAlt != registerInhalt{
+		Stiftfarbe(255, 0, 0)
+	}else{
+		Stiftfarbe(0, 0, 0)
+	}
 	labelOffset = 12 * 16
 	SchreibeFont(x1+labelOffset, y1, hex.EncodeToString([]byte{registerInhalt}))
 
 }
+
+func (gfxElement *impl) AbbildLabel(x1, y1 uint16, label string, schriftgroesse int, r uint8, g uint8, b uint8) {
+	
+	Stiftfarbe(r,g,b)
+	SetzeFont("./font/LiberationMono-Regular.ttf", schriftgroesse)
+	SchreibeFont(x1, y1, label)
+
+}
+
 func (gfxElement *impl) AbbildFlag(x1, y1 uint16, label string, flagStatus int, flagStatusAlt int) {
 	var labelOffset uint16
 	Stiftfarbe(0, 81, 47)
