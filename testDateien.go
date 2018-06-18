@@ -13,7 +13,6 @@ var buffer 		[]byte
 var counter 	int
 func main(){
 	// Liste der Assemblerbefehle
-/*
 	befehleListe := map[string][]string{
 	"ADC":{},"AND":{},"ASL":{},"BCC":{},"BCS":{},"BEQ":{},
 	"BIT":{},"BMI":{},"BNE":{},"BPL":{},"BRK":{},"BVC":{},
@@ -24,9 +23,7 @@ func main(){
 	"PHP":{},"PLA":{},"PLP":{},"ROL":{},"ROR":{},"RTI":{},
 	"RTS":{},"SBC":{},"SEC":{},"SED":{},"SEI":{},"STA":{},
 	"STX":{},"STY":{},"TAX":{},"TAY":{},"TSX":{},"TXS":{},
-	"TXA":{},"TYA":{}
-	}
-*/
+	"TXA":{},"TYA":{}}
 	// Öffenen der Programmdatei
 	dateiInhalt := dateien.Oeffnen("./programm.hag",'l')
 	for !dateiInhalt.Ende(){
@@ -44,10 +41,10 @@ func main(){
 
 	// Finde führende und abschliessende Leerzeichen
 	regexLeerzeichen := regexp.MustCompile(`^\s*(.*)\s*$`)
-	
+
 	// Finde  reine Kommentarzeilen
 	jumpComment := regexp.MustCompile(`^\s*;.+$`)
-	
+
 	// Finde Kommentare
 	deleteComment := regexp.MustCompile(`^(.*);.*$`)
 
@@ -60,12 +57,7 @@ func main(){
 
 	// Finde Pseudobefehle 
 	pseudoBefehle 		:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*(#\$|\$)[A-Fa-f0-9]+\s*$`)
-	//pseudoBefehle 		:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*\$\d+\s*$`)
-	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*([#$0-9]+)\s*`)
-	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#$|$){1}[0-9]{1,4})\s*`)
-	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$){1}[0-9]{1,4})\s*`)
 	pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$)[0-9A-Fa-f]{1,4})\s*$`)
-	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]*)\s*=\s*($[0-9]{1,4})\s*`)
 
 	pseudoBefehleHASH := map[string][]string{}
 
@@ -75,7 +67,6 @@ func main(){
 	var codeLine string
 	for _,codeLine = range(hagCodeArray){
 			fmt.Println(codeLine)
-		
 
 		// Überspringe leere Zeilen
 		if ueberspringeLeereZeilen.MatchString(codeLine){
@@ -102,20 +93,28 @@ func main(){
 		}
 
 		if  pseudoBefehle.MatchString(codeLine){
-			fmt.Println("001: Es wurde ein Pseudobefehl gefunden!")
 			if 	pseudoBefehleExakt.MatchString(codeLine){
 
 				pseudoBefehlName	:= pseudoBefehleExakt.ReplaceAllString(codeLine, `$1`)
 				pseudoBefehlInhalt	:= pseudoBefehleExakt.ReplaceAllString(codeLine, `$2`)
 				pseudoBefehleHASH[pseudoBefehlName] = []string{pseudoBefehlInhalt}
+				continue
 			}else{
-				panic("002:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
+				panic("001:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
 			}
-		}else{
-				panic("003:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
 		}
+		fmt.Println(codeLine)
+		array:=strings.Fields(codeLine)
+		if _, ok := befehleListe[array[0]]; ok {
+			fmt.Println("value: ", array[0])
+		} else {
+			fmt.Println("key not found")
+		}
+		fmt.Println(array)
+
+
+
 /*
-		codeArray := strings.Fields(codeLine)
 
 		for _,line := range(codeArray){	
 			opcode,takte := assemble.TranslateLDA(codeArray)
