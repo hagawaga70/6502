@@ -1,4 +1,22 @@
 ;
-ADD 
-welt
-heute
+ ;
+ADR1 = #$AF11
+
+ADR2 = $120
+
+ADR3 = $140
+
+
+
+;	  *=$600
+;			CLD
+;			CLC
+;			LDX #$5
+;			STX ADR1
+;	TEST	LDX #$5
+;			STX ADR2
+;			STX AD
+;			LDA ADR1
+;			ADC ADR2
+;			STA ADR3
+;			·END

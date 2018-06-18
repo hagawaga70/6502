@@ -51,8 +51,7 @@ func (r *impl) TranslateLDA(assemblerCode []string) ( optcode []string, takte in
 		}
 	}else if len(assemblerCode) == 3{
 		// Absolut	
-		if	hexa1,hit1 := check8BitAdresse(assemblerCode[1]);
-			hexa2,hit2 := check8BitAdresse(assemblerCode[2]);
+		if	hexa1,hit1,hexa2,hit2 := check8BitwerteTwice(assemblerCode[1],assemblerCode[2]);    //
 			hit1 == true && hit2 == true{
 				optcode = append(optcode, "AD")			// 101bbb01 1010 1101
 				optcode = append(optcode, hexa1)		// Hexadezimale Zahl ohne Dollarzeichen
@@ -66,6 +65,12 @@ func (r *impl) TranslateLDA(assemblerCode []string) ( optcode []string, takte in
 		}
 	}
 	return optcode,takte
+}
+
+func check8BitwerteTwice(adress1 string,adress2 string)(hexa1 string,hit1 bool, hexa2 string, hit2 bool){
+	hexa1,hit1 = check8BitAdresse(adress1)
+	hexa2,hit2 = check8BitAdresse(adress2)
+	return
 }
 
 

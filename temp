@@ -1,0 +1,9 @@
+	var ta Assembler = NewAssembler() 
+	var code []string = []string{"LDA","#$FF"}
+	//code[0] = "LDA"
+	//code[1] = "$FF"
+	opcode,takte := ta.TranslateLDA(code)
+	for _,value := range(opcode){
+		fmt.Println(value)
+	}
+	fmt.Println(takte)

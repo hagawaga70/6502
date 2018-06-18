@@ -6,22 +6,131 @@ import "./dateien"
 import "fmt"
 import "regexp"
 import "strings"
-import "reflect"
-
+//import "reflect"
+//import ."./assembler"
 
 var buffer 		[]byte
 var counter 	int
 func main(){
-		dateiInhalt := dateien.Oeffnen("./programm.hag",'l')
+	// Liste der Assemblerbefehle
+/*
+	befehleListe := map[string][]string{
+	"ADC":{},"AND":{},"ASL":{},"BCC":{},"BCS":{},"BEQ":{},
+	"BIT":{},"BMI":{},"BNE":{},"BPL":{},"BRK":{},"BVC":{},
+	"BVS":{},"CLC":{},"CLD":{},"CLI":{},"CMP":{},"CLV":{},
+	"CPX":{},"CPY":{},"DEC":{},"DEX":{},"DEY":{},"EOR":{},
+	"INC":{},"INX":{},"INY":{},"JMP":{},"JSR":{},"LDA":{},
+	"LDX":{},"LDY":{},"LSR":{},"NOP":{},"ORA":{},"PHA":{},
+	"PHP":{},"PLA":{},"PLP":{},"ROL":{},"ROR":{},"RTI":{},
+	"RTS":{},"SBC":{},"SEC":{},"SED":{},"SEI":{},"STA":{},
+	"STX":{},"STY":{},"TAX":{},"TAY":{},"TSX":{},"TXS":{},
+	"TXA":{},"TYA":{}
+	}
+*/
+	// Öffenen der Programmdatei
+	dateiInhalt := dateien.Oeffnen("./programm.hag",'l')
 	for !dateiInhalt.Ende(){
 		buffer = append(buffer,dateiInhalt.Lesen())
 		counter++
 	}
 	dateiInhalt.Schliessen()
- 	hagCode:= string(buffer[:counter])
-	fmt.Println(hagCode)
 
-    // Create map of string slices.
+	// Umwandeln der Bytes in EINE Zeichenkette
+	hagCode := string(buffer[:counter])
+
+	// Umwandeln der EINEN Zeichenkette in ein Slice: Das Trennzeichen ist \n (NEWLINE)
+	// Das Array hat am Ende ein Leerzeile mehr als die Programmdatei (Kein Problem)
+	hagCodeArray := strings.Split(hagCode,"\n")
+
+	// Finde führende und abschliessende Leerzeichen
+	regexLeerzeichen := regexp.MustCompile(`^\s*(.*)\s*$`)
+	
+	// Finde  reine Kommentarzeilen
+	jumpComment := regexp.MustCompile(`^\s*;.+$`)
+	
+	// Finde Kommentare
+	deleteComment := regexp.MustCompile(`^(.*);.*$`)
+
+	// Finde leere Zeilen
+	ueberspringeLeereZeilen := regexp.MustCompile(`^\s*$`)
+
+
+	// Finde Zeilen mit n  Semikolons 
+	ueberspringeSemikolonZeilen := regexp.MustCompile(`^\s*;+\s*$`)
+
+	// Finde Pseudobefehle 
+	pseudoBefehle 		:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*(#\$|\$)[A-Fa-f0-9]+\s*$`)
+	//pseudoBefehle 		:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*\$\d+\s*$`)
+	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*([#$0-9]+)\s*`)
+	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#$|$){1}[0-9]{1,4})\s*`)
+	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$){1}[0-9]{1,4})\s*`)
+	pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$)[0-9A-Fa-f]{1,4})\s*$`)
+	//pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]*)\s*=\s*($[0-9]{1,4})\s*`)
+
+	pseudoBefehleHASH := map[string][]string{}
+
+
+
+	//var assemble Assembler = NewAssembler() 
+	var codeLine string
+	for _,codeLine = range(hagCodeArray){
+			fmt.Println(codeLine)
+		
+
+		// Überspringe leere Zeilen
+		if ueberspringeLeereZeilen.MatchString(codeLine){
+			continue
+		}
+
+		// Überspringe Semikolonzeilen 
+		if ueberspringeSemikolonZeilen.MatchString(codeLine){
+			continue
+		}
+
+		// Überspringe reine Kommentarzeilen
+		if jumpComment.MatchString(codeLine){
+			continue
+		}
+		// Löschen der Leezeichen
+		if regexLeerzeichen.MatchString(codeLine){
+			codeLine = regexLeerzeichen.ReplaceAllString(codeLine, `$1`)
+		}
+
+		// Löschen der Kommentare
+		if  deleteComment.MatchString(codeLine){
+			codeLine = deleteComment.ReplaceAllString(codeLine, `$1`)
+		}
+
+		if  pseudoBefehle.MatchString(codeLine){
+			fmt.Println("001: Es wurde ein Pseudobefehl gefunden!")
+			if 	pseudoBefehleExakt.MatchString(codeLine){
+
+				pseudoBefehlName	:= pseudoBefehleExakt.ReplaceAllString(codeLine, `$1`)
+				pseudoBefehlInhalt	:= pseudoBefehleExakt.ReplaceAllString(codeLine, `$2`)
+				pseudoBefehleHASH[pseudoBefehlName] = []string{pseudoBefehlInhalt}
+			}else{
+				panic("002:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
+			}
+		}else{
+				panic("003:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
+		}
+/*
+		codeArray := strings.Fields(codeLine)
+
+		for _,line := range(codeArray){	
+			opcode,takte := assemble.TranslateLDA(codeArray)
+			for _,value := range(opcode){
+				fmt.Println(value)
+			}
+			fmt.Println(takte)
+		}
+*/
+	}
+        fmt.Println(pseudoBefehleHASH)
+}
+
+/*
+// Create map of string slices.
     m := map[string][]string{
 						// 101b bb01								
         "LDA": {"--",	// 			 IMPLIZIT
@@ -39,11 +148,10 @@ func main(){
 				"--",},	// 			 INDIREKT
         "AND": {},
     }
-	fmt.Println(reflect.TypeOf(m))
-    // Add a string at the dog key.
+
+// Add a string at the dog key.
     // ... Append returns the new string slice.
     res := append(m["dog"], "brown")
-    fmt.Println(res)
 
     // Add a key for fish.
     m["fish"] = []string{"orange", "red"}
@@ -57,39 +165,8 @@ func main(){
     }
 
 
-
-codeLine := "   		ADC #$11 ;Hier steht ein Text   "
-//re := regexp.MustCompile(`(^|[^_])\bproducts\b([^_]|$)`)
-re := regexp.MustCompile(`^\s*(.*)\s*$`)			// Führende und abschliessende Leerzeichen, Tabs etc. werden gelöscht
-
-codeLine = re.ReplaceAllString(codeLine, `$1`)
-checkKommentar := regexp.MustCompile(`^.*;.*$`)	
-
-
-re = regexp.MustCompile(`(.*);.*$`)			// Führende und abschliessende Leerzeichen, Tabs etc. werden gelöscht
-
-if checkKommentar.MatchString(codeLine){				// Kommentartest 
-	codeLine = re.ReplaceAllString(codeLine, `$1`)		// Löschen des Kommentars
-	fmt.Println(codeLine)
-	codeArray := strings.Fields(codeLine)
-	fmt.Println(codeArray)
-
-}else{
-	fmt.Println(codeLine)
-}
-
-var validID = regexp.MustCompile(`^[a-z]+\[[0-9]+\]$`)
-
-	fmt.Println(validID.MatchString("adam[23]"))
-	fmt.Println(validID.MatchString("eve[7]"))
-	fmt.Println(validID.MatchString("Job[48]"))
-	fmt.Println(validID.MatchString("snakey"))
-
-fmt.Println(testBefehl("KKK"))
-}
-
 func testBefehl(befehl string) bool{
-	var befehle []string  =  	[]string{		"ADC","AND","ASL","BCC","BCS","BEQ",
+	var befehle []string  =  	[]string{		","AND","ASL","BCC","BCS","BEQ",
 												"BIT","BMI","BNE","BPL","BRK","BVC",
 												"BVS","CLC","CLD","CLI","CMP","CLV",
 												"CPX","CPY","DEC","DEX","DEY","EOR",
@@ -107,9 +184,8 @@ func testBefehl(befehl string) bool{
 	
 	return false
 
+*/
 
-
-}
 
 
 
