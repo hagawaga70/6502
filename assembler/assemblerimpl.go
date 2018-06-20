@@ -1,9 +1,12 @@
 package assembler
 
 import "regexp"
-//import "fmt"
-import "encoding/hex"
+import ."fmt"
+//import "encoding/hex"
 //import "encoding/binary"
+import "strconv"
+
+
 type impl struct {
 }
 
@@ -12,16 +15,41 @@ func NewAssembler() *impl {
 	r = new(impl)
 	return r
 }
-func checkAdresse(adresse string,pseudoBefehle map[string][]string{})(hex []string, hit bool){
+func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
+	var debug bool = true
+
 	adresse1Byte1Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})$`)	// - Initialisiere Suchmuster 1 Bit einstellig
 	adresse1Byte2Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 1 Bit zweistellig
 	adresse2Byte3Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit dreistellig
 	adresse2Byte4Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit vierstellig
-	adresse2Byte	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{3,4})$`)	// - Initialisiere Suchmuster 2 Bit
-	adressePCByte	:= regexp.MustCompile(`^([ABCDEFabcdef0-9]+$`)			// - Initialisiere Suchmuster PseudoCode
+	//adresse2Byte	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{3,4})$`)	// - Initialisiere Suchmuster 2 Bit
+	adressePCByte	:= regexp.MustCompile(`^([A-Za-z0-9])+$`)			// - Initialisiere Suchmuster PseudoCode
 
+	if debug{
+
+			Println("---------------------------------------------------------------------")
+			Println("assemblerimpl -pseudoBefehle -adresse")
+			Println(pseudoBefehle)
+			Println(adresse)
+			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
+
+	}
+
+
+	// Es wurde ein Pseudocode übergeben
 	if hit= adressePCByte.MatchString(adresse);hit{							// - Ließt den Wert des PseudoCodes aus
-		adresse = pseudoBefehle[adresse]									//
+		adresse = pseudoBefehle[adresse][0]									//
+		if debug{Println("assemblerimpl -machtadresse"); Println(adresse);Println("END")}
+	}
+
+
+	if debug{
+
+			Println("---------------------------------------------------------------------")
+			Println("assemblerimpl -adresse")
+			Println(adresse)
+			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
+
 	}
 
 	// - Hexadezimaler Wert <= 255 ohne $-Zeichen 1-stellig (die führende Null wird davorgesetzt)
@@ -32,7 +60,7 @@ func checkAdresse(adresse string,pseudoBefehle map[string][]string{})(hex []stri
 
 	// - Hexadezimaler Wert <= 255 ohne $-Zeichen 2-stellig 
 	}else if hit= adresse1Byte2Stellig.MatchString(adresse);hit{
-		adresse = adresse1Byte1Stellig.ReplaceAllString(adresse,`$1`)
+		adresse = adresse1Byte2Stellig.ReplaceAllString(adresse,`$1`)
 		hex		= append(hex,adresse)
 
 	// - Hexadezimaler Wert > 255 ohne $-Zeichen (die führende Null wird davorgesetzt) 
@@ -44,11 +72,7 @@ func checkAdresse(adresse string,pseudoBefehle map[string][]string{})(hex []stri
 	}else if hit= adresse2Byte4Stellig.MatchString(adresse);hit{
 		hex		= append(hex,adresse2Byte3Stellig.ReplaceAllString(adresse,`$1`))	
 		hex		= append(hex,adresse2Byte3Stellig.ReplaceAllString(adresse,`$2`))	// - Hexadezimaler Wert <= 255 ohne $-Zeichen 
-
-	}else{
-		panic("003: Falsche Angabe der Adresse")
 	}
-
 
 	return
 /*
@@ -58,29 +82,39 @@ func checkAdresse(adresse string,pseudoBefehle map[string][]string{})(hex []stri
 */
 }
 
-func check8BitWert(adresse string)(hex string, hit bool){
-	adresse1Byte := regexp.MustCompile(`^\#\$([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster
+func check8BitWert(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
+
+	adresse1Byte := regexp.MustCompile(`^\#\$([ABCDEFabcdef0-9]{2})$`)		// - Initialisiere Suchmuster
+	adressePCByte	:= regexp.MustCompile(`^([A-Za-z0-9])+$`)			// - Initialisiere Suchmuster PseudoCode
+
+	if hit= adressePCByte.MatchString(adresse);hit{							// - Ließt den Wert des PseudoCodes aus
+		adresse = pseudoBefehle[adresse][0]									//
+	}
+
 	hit = adresse1Byte.MatchString(adresse)								// - Wendet Suchmuster an. Wenn es passt ist der 
 	adresse = adresse1Byte.ReplaceAllString(adresse,`$1`)				// - Hexadezimaler Wert ohne # und $-Zeichen 
-	hex = adresse
+	hex = append(hex,adresse)
 	return
 }
 
-func (r *impl) TranslateLDA	(assemblerCode []string,pseudoBefehle map[string][]string{}, aktuelleAdresse string) 
-							( optcode []string, takte int, naechsteAdresse string) {
-
-	if hexa,hit := checkAdresse(assemblerCode[1]);hit == true{	
+func (r *impl) TranslateLDA	(assemblerCode []string,pseudoBefehle map[string][]string, aktuelleAdresse string) ( optcode []string, takte string, naechsteAdresse string) {
+	// Entspricht die Syntax der absoluten Addressierung oder der Addressierug der Seite 0
+	var adressOffset int
+	if hexa,hit := checkAdresse(assemblerCode[1],pseudoBefehle);hit == true{	 
 		// Seite 0
-		if len(hex)==1{
+		if len(hexa)==1{
 			optcode = append(optcode, "A5") 			// 101bbb01 1010 0101
-			optcode = append(optcode, hexa) 			// Hexadezimale Zahl ohne Dollarzeichen
-			takte = 3									// Anzahl der benötigten Takte
+			optcode = append(optcode, hexa[0]) 			// Hexadezimale Zahl ohne Dollarzeichen
+			takte = "3"									// Anzahl der benötigten Takte
+			adressOffset=3								// Zwei Byte bis zur nächsten freien Adresse
 
 		// Absolut	
-		else if len(hex)==2{
+		}else if len(hexa)==2{
 			optcode = append(optcode, "AD")				// 101bbb01 1010 1101
-			optcode = append(optcode, hexa)				// Hexadezimale Zahl ohne Dollarzeichen
-			takte = 4									// Anzahl der benötigten Takte
+			optcode = append(optcode, hexa[0])			// Hexadezimale Zahl ohne Dollarzeichen
+			optcode = append(optcode, hexa[1])			// Hexadezimale Zahl ohne Dollarzeichen
+			takte = "4"									// Anzahl der benötigten Takte
+			adressOffset=4								// Zwei Byte bis zur nächsten freien Adresse
 
 			//optcode = append(optcode, "Fehler bei der Übersetzung des Befehls LDA")
 			//optcode = append(optcode, "001: Das zweite Byte entspricht nicht der Anforderungen z.B. $0A oder $0a" )
@@ -88,28 +122,29 @@ func (r *impl) TranslateLDA	(assemblerCode []string,pseudoBefehle map[string][]s
 		}else{
 			panic("Fehler 010")
 		}
-	else if hexa,hit := checkAdresse(assemblerCode[1]);hit == true{	
-	}else if hexa1,hit1,hexa2,hit2 := checkWerteTwice(assemblerCode[1],assemblerCode[2]);    //
-			hit1 == true && hit2 == true{
-						// Fehlermeldung
-		}else{
-			optcode = append(optcode, "Fehler bei der Übersetzung des Befehls LDA")
-			optcode = append(optcode, "002: Das 2. oder 3. Byte entspricht nicht der Anforderungen z.B. $0A oder $0a" )
-			takte = -1
-		// Adressierungsart: unmittelbar
-		}else if hexa,hit := check8BitWert(assemblerCode[1]);hit == true{	
+	// Adressierungsart: unmittelbar
+	}else if hexa,hit := check8BitWert(assemblerCode[1],pseudoBefehle);hit == true{	
 			optcode = append(optcode, "A9") 			// 101bbb01 1010 1001
-			optcode = append(optcode, hexa) 			// Hexadezimale Zahl ohne Dollarzeichen
-			takte = 2									// Anzahl der benötigten Takte
+			optcode = append(optcode, hexa[0]) 			// Hexadezimale Zahl ohne Dollarzeichen
+			takte 	= "2"									// Anzahl der benötigten Takte
+			adressOffset=3								// Ein Byte bis zur nächsten freien Adresse
+
 		// Fehlermeldung
-}
-	return optcode,takte
+	}else{
+		panic("ERROR 002: Der Übergabewert ist weder eine Adresse noch ein Wert!")
+	}
+
+	aktuelleAdresseINT, err := strconv.ParseInt(aktuelleAdresse, 16, 0)
+
+	if err != nil {
+		panic(err)
+	}
+
+	naechsteAdresseINT	:= int(aktuelleAdresseINT) + adressOffset
+	naechsteAdresse		 = strconv.FormatInt(int64(naechsteAdresseINT), 16)
+
+	return optcode, takte, naechsteAdresse
 }
 
-func check8BitwerteTwice(adress1 string,adress2 string)(hexa1 string,hit1 bool, hexa2 string, hit2 bool){
-	hexa1,hit1 = check8BitAdresse(adress1)
-	hexa2,hit2 = check8BitAdresse(adress2)
-	return
-}
 
 

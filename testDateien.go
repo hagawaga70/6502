@@ -3,16 +3,25 @@ package main
 
 
 import "./dateien"
-import "fmt"
+import ."fmt"
 import "regexp"
 import "strings"
 //import "reflect"
-//import ."./assembler"
+import ."./assembler"
 
 var buffer 		[]byte
-var counter 	int
+var counter 	int					// Zeilennummerierung für die opcodeList
+var opcodeList 	map[int][]string
 func main(){
 	// Liste der Assemblerbefehle
+	var assemble Assembler = NewAssembler() 
+	var codeLine 		string
+	var startAdresse 	string
+	var opcode 			[]string
+	var takte			string
+	var naechsteAdresse string
+	var debug bool = true
+	
 	befehleListe := map[string][]string{
 	"ADC":{},"AND":{},"ASL":{},"BCC":{},"BCS":{},"BEQ":{},
 	"BIT":{},"BMI":{},"BNE":{},"BPL":{},"BRK":{},"BVC":{},
@@ -24,7 +33,8 @@ func main(){
 	"RTS":{},"SBC":{},"SEC":{},"SED":{},"SEI":{},"STA":{},
 	"STX":{},"STY":{},"TAX":{},"TAY":{},"TSX":{},"TXS":{},
 	"TXA":{},"TYA":{}}
-	// Öffenen der Programmdatei
+
+	// Öffnen der Programmdatei
 	dateiInhalt := dateien.Oeffnen("./programm.hag",'l')
 	for !dateiInhalt.Ende(){
 		buffer = append(buffer,dateiInhalt.Lesen())
@@ -56,24 +66,23 @@ func main(){
 	ueberspringeSemikolonZeilen := regexp.MustCompile(`^\s*;+\s*$`)
 
 	// Finde Pseudobefehle 
-	pseudoBefehle 		:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*(#\$|\$)[A-Fa-f0-9]+\s*$`)
-	pseudoBefehleExakt 	:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$)[0-9A-Fa-f]{1,4})\s*$`)
+	pseudoBefehle			:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*(#\$|\$)[A-Fa-f0-9]+\s*$`)
+	pseudoBefehleExakt		:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$)[0-9A-Fa-f]{1,4})\s*$`)
+	startAdresseRegex		:= regexp.MustCompile(`^\s*\*\s*=.*$`)
+	startAdresseRegexExakt	:= regexp.MustCompile(`^\s*\*\s*=\s*?\$([0-9A-Fa-f]{1,4})\s*$`)
+	pseudoBefehleHASH		:= map[string][]string{}	// Der Name des Pseudobefehls ist der Key des Hashes
 
-	pseudoBefehleHASH := map[string][]string{}
 
 
-
-	//var assemble Assembler = NewAssembler() 
-	var codeLine string
-	for _,codeLine = range(hagCodeArray){
-			fmt.Println(codeLine)
+		for _,codeLine = range(hagCodeArray){
+		//Println(codeLine)
 
 		// Überspringe leere Zeilen
 		if ueberspringeLeereZeilen.MatchString(codeLine){
 			continue
 		}
 
-		// Überspringe Semikolonzeilen 
+		// Überspringe reine Semikolonzeilen 
 		if ueberspringeSemikolonZeilen.MatchString(codeLine){
 			continue
 		}
@@ -92,8 +101,20 @@ func main(){
 			codeLine = deleteComment.ReplaceAllString(codeLine, `$1`)
 		}
 
+		// Lesen der Startadresse
+		if  startAdresseRegex.MatchString(codeLine){
+
+			if	startAdresseRegexExakt.MatchString(codeLine){
+				startAdresse  = startAdresseRegexExakt.ReplaceAllString(codeLine, `$1`)
+				pseudoBefehleHASH["$t@rt@dre$$e"] = []string{startAdresse}
+				continue
+			}else{
+				panic("002: Die Angabe der Startadresse ist nicht korrekt -> *=$xxxx - x = [A-Fa-f0-9] ") 
+			}
+		}
+		// Lesen des Pseudobefehls
 		if  pseudoBefehle.MatchString(codeLine){
-			if 	pseudoBefehleExakt.MatchString(codeLine){
+			if	pseudoBefehleExakt.MatchString(codeLine){
 
 				pseudoBefehlName	:= pseudoBefehleExakt.ReplaceAllString(codeLine, `$1`)
 				pseudoBefehlInhalt	:= pseudoBefehleExakt.ReplaceAllString(codeLine, `$2`)
@@ -103,30 +124,52 @@ func main(){
 				panic("001:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
 			}
 		}
-		fmt.Println(codeLine)
-		array:=strings.Fields(codeLine)
-		if _, ok := befehleListe[array[0]]; ok {
-			fmt.Println("value: ", array[0])
+		if debug{
+			Println("---------------------------------------------------------------------")
+			Println("testDateien pseudoBefehleHASH codeLine")
+			Println(pseudoBefehleHASH)
+			Println(codeLine)
+			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
+		}
+		codeArray:=strings.Fields(codeLine)
+
+		if _, ok := befehleListe[codeArray[0]]; ok {
+			Println("value: ",  befehleListe[codeArray[0]])
 		} else {
-			fmt.Println("key not found")
+			Println("key not found")
 		}
-		fmt.Println(array)
 
-
-
-/*
-
-		for _,line := range(codeArray){	
-			opcode,takte := assemble.TranslateLDA(codeArray)
-			for _,value := range(opcode){
-				fmt.Println(value)
-			}
-			fmt.Println(takte)
+		Println(codeArray[0])
+		if codeArray[0] == "LDA"{
+			opcode,takte,naechsteAdresse = assemble.TranslateLDA(codeArray,pseudoBefehleHASH,startAdresse)
 		}
-*/
-	}
-        fmt.Println(pseudoBefehleHASH)
+
+		opcodeList[counter] = []string{}
+    	opcodeList = append(opcodeList[counter],startAdresse)
+    	opcodeList = append(opcodeList[counter],startAdresse)
+
+		startAdresse = naechsteAdresse
+		counter++
+
+
+		if debug{
+			Println("---------------------------------------------------------------------")
+			Println("testDateien -opcode -takte")
+			Println(opcode)
+			Println(takte)
+			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
+		}
+    }
 }
+/*
+		for _,line := range(codeArray){	
+			for _,value := range(opcode){
+				Println(value)
+			}
+			Println(takte)
+		}
+	}
+*/
 
 /*
 // Create map of string slices.
@@ -156,33 +199,12 @@ func main(){
     m["fish"] = []string{"orange", "red"}
 
     // Print slice at key.
-    fmt.Println(m["fish"])
+    Println(m["fish"])
 
     // Loop over string slice at key.
     for i := range m["fish"] {
-        fmt.Println(i, m["fish"][i])
+        Println(i, m["fish"][i])
     }
-
-
-func testBefehl(befehl string) bool{
-	var befehle []string  =  	[]string{		","AND","ASL","BCC","BCS","BEQ",
-												"BIT","BMI","BNE","BPL","BRK","BVC",
-												"BVS","CLC","CLD","CLI","CMP","CLV",
-												"CPX","CPY","DEC","DEX","DEY","EOR",
-												"INC","INX","INY","JMP","JSR","LDA",
-												"LDX","LDY","LSR","NOP","ORA","PHA",
-												"PHP","PLA","PLP","ROL","ROR","RTI",
-												"RTS","SBC","SEC","SED","SEI","STA",
-												"STX","STY","TAX","TAY","TSX","TXS",
-												"TXA","TYA"}
-	for _,value := range(befehle){
-		if befehl == value{
-			return true
-		}
-	}		
-	
-	return false
-
 */
 
 
