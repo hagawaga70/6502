@@ -71,7 +71,7 @@ func main(){
 	pseudoBefehle			:= regexp.MustCompile(`^\s*[A-Za-z0-9]+\s*=\s*(#\$|\$)[A-Fa-f0-9]+\s*$`)
 	pseudoBefehleExakt		:= regexp.MustCompile(`^\s*([A-Z0-9]+)\s*=\s*((#\$|\$)[0-9A-Fa-f]{1,4})\s*$`)
 	startAdresseRegex		:= regexp.MustCompile(`^\s*\*\s*=.*$`)
-	startAdresseRegexExakt	:= regexp.MustCompile(`^\s*\*\s*=\s*?\$([0-9A-Fa-f]{1,4})\s*$`)
+	startAdresseRegexExakt	:= regexp.MustCompile(`^\s*\*\s*=\s*\$([0-9A-Fa-f]{1,4})\s*$`)
 	pseudoBefehleHASH		:= map[string][]string{}	// Der Name des Pseudobefehls ist der Key des Hashes
 
 
@@ -135,12 +135,12 @@ func main(){
 		}
 		codeArray:=strings.Fields(codeLine)
 
-		if _, ok := befehleListe[codeArray[0]]; ok {
-			Println("value: ",  befehleListe[codeArray[0]])
-		} else {
-			Println("key not found")
+		// Eine Sprungmarke wird abgespeichert
+		if _, ok := befehleListe[codeArray[0]]; !ok {
+			
+			pseudoBefehleHASH[codeArray[0]] = []string{"$"+startAdresse}
+			codeArray = codeArray[1:]
 		}
-
 		Println(codeArray[0])
 		if codeArray[0] == "LDA"{
 			opcode,takte,naechsteAdresse = assemble.TranslateLDA(codeArray,pseudoBefehleHASH,startAdresse)

@@ -84,16 +84,29 @@ func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string
 
 func check8BitWert(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
 
-	adresse1Byte := regexp.MustCompile(`^\#\$([ABCDEFabcdef0-9]{2})$`)		// - Initialisiere Suchmuster
+	adresse1Byte1Stellig := regexp.MustCompile(`^\#\$([ABCDEFabcdef0-9]{1})$`)		// - Initialisiere Suchmuster
+	adresse1Byte2Stellig := regexp.MustCompile(`^\#\$([ABCDEFabcdef0-9]{2})$`)		// - Initialisiere Suchmuster
 	adressePCByte	:= regexp.MustCompile(`^([A-Za-z0-9])+$`)			// - Initialisiere Suchmuster PseudoCode
 
 	if hit= adressePCByte.MatchString(adresse);hit{							// - Ließt den Wert des PseudoCodes aus
 		adresse = pseudoBefehle[adresse][0]									//
 	}
 
-	hit = adresse1Byte.MatchString(adresse)								// - Wendet Suchmuster an. Wenn es passt ist der 
-	adresse = adresse1Byte.ReplaceAllString(adresse,`$1`)				// - Hexadezimaler Wert ohne # und $-Zeichen 
-	hex = append(hex,adresse)
+	// - Hexadezimaler Wert <= 255 ohne $-Zeichen 1-stellig 
+	if hit= adresse1Byte1Stellig.MatchString(adresse);hit{
+		adresse = adresse1Byte1Stellig.ReplaceAllString(adresse,`$1`)
+		adresse = "0"+adresse
+		hex		= append(hex,adresse)
+
+	// - Hexadezimaler Wert <= 255 ohne $-Zeichen 2-stellig 
+	}else if hit= adresse1Byte2Stellig.MatchString(adresse);hit{
+		adresse = adresse1Byte2Stellig.ReplaceAllString(adresse,`$1`)
+		hex		= append(hex,adresse)
+	}
+
+	//hit = adresse1Byte.MatchString(adresse)								// - Wendet Suchmuster an. Wenn es passt ist der 
+	//adresse = adresse1Byte.ReplaceAllString(adresse,`$1`)				// - Hexadezimaler Wert ohne # und $-Zeichen 
+	//hex = append(hex,adresse)
 	return
 }
 
@@ -120,25 +133,36 @@ func (r *impl) TranslateLDA	(assemblerCode []string,pseudoBefehle map[string][]s
 			//optcode = append(optcode, "001: Das zweite Byte entspricht nicht der Anforderungen z.B. $0A oder $0a" )
 			//takte = -1
 		}else{
-			panic("Fehler 010")
+
+			optcode = append(optcode, "LDA: Fehler der absoluten Addressierung oder der Addressierug der Seite 0 >>"+assemblerCode[1]+"<")	 // 101bbb01 1010 1101
+			takte = "-1"			// Wenn takte = -1  -> FEHLER
+			adressOffset=0
 		}
+
 	// Adressierungsart: unmittelbar
 	}else if hexa,hit := check8BitWert(assemblerCode[1],pseudoBefehle);hit == true{	
-			optcode = append(optcode, "A9") 			// 101bbb01 1010 1001
-			optcode = append(optcode, hexa[0]) 			// Hexadezimale Zahl ohne Dollarzeichen
-			takte 	= "2"									// Anzahl der benötigten Takte
-			adressOffset=3								// Ein Byte bis zur nächsten freien Adresse
+		optcode = append(optcode, "A9") 			// 101bbb01 1010 1001
+		optcode = append(optcode, hexa[0]) 			// Hexadezimale Zahl ohne Dollarzeichen
+		takte 	= "2"									// Anzahl der benötigten Takte
+		adressOffset=3								// Ein Byte bis zur nächsten freien Adresse
 
-		// Fehlermeldung
+	// Fehlermeldung
 	}else{
-		panic("ERROR 002: Der Übergabewert ist weder eine Adresse noch ein Wert!")
+
+		optcode = append(optcode, "LDA: Fehler der unmittelbaren Addressierung  >>"+assemblerCode[1]+"<")	 // 101bbb01 1010 1101
+		takte = "-1"			// Wenn takte = -1  -> FEHLER
+		adressOffset=0
 	}
 
 	aktuelleAdresseINT, err := strconv.ParseInt(aktuelleAdresse, 16, 0)
 
 	if err != nil {
-		panic(err)
+
+		optcode = append(optcode, "LDA: Fehler bei der Konvertierung HEX -> INT")	 // 101bbb01 1010 1101
+		takte = "-1"			// Wenn takte = -1  -> FEHLER
+		adressOffset=0
 	}
+
 
 	naechsteAdresseINT	:= int(aktuelleAdresseINT) + adressOffset
 	naechsteAdresse		 = strconv.FormatInt(int64(naechsteAdresseINT), 16)

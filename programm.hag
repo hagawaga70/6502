@@ -13,15 +13,14 @@ ADR3 = $140
 ;			CLC
 ;			LDX #$5
 ;			STX ADR1
-;	TEST	LDX #$5
+	TEST	LDA #$25
 ;			STX ADR2
 ;			STX AD
 		LDA ADR1
 		LDA ADR2
 		LDA ADR3
 		LDA ADR1
-		LDA #$22
-		LDA $FF
+		LDA TEST
 ;			ADC ADR2
 ;			STA ADR3
 ;			·END
