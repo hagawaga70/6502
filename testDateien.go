@@ -9,9 +9,10 @@ import "strings"
 //import "reflect"
 import ."./assembler"
 
-var buffer 		[]byte
-var counter 	int					// Zeilennummerierung für die opcodeList
-var opcodeList 	map[int][]string
+var buffer 				[]byte
+var counterOpcodeList 	int						// Zeilennummerierung für die opcodeList
+var counter 			int
+var opcodeList 			map[int][]string
 func main(){
 	// Liste der Assemblerbefehle
 	var assemble Assembler = NewAssembler() 
@@ -21,7 +22,8 @@ func main(){
 	var takte			string
 	var naechsteAdresse string
 	var debug bool = true
-	
+	opcodeList := map[int][]string{}
+
 	befehleListe := map[string][]string{
 	"ADC":{},"AND":{},"ASL":{},"BCC":{},"BCS":{},"BEQ":{},
 	"BIT":{},"BMI":{},"BNE":{},"BPL":{},"BRK":{},"BVC":{},
@@ -144,13 +146,11 @@ func main(){
 			opcode,takte,naechsteAdresse = assemble.TranslateLDA(codeArray,pseudoBefehleHASH,startAdresse)
 		}
 
-		opcodeList[counter] = []string{}
-    	opcodeList = append(opcodeList[counter],startAdresse)
-    	opcodeList = append(opcodeList[counter],startAdresse)
+    	opcodeList[counterOpcodeList] = []string{startAdresse,takte}
+    	opcodeList[counterOpcodeList] = append(opcodeList[counterOpcodeList],opcode...)
 
 		startAdresse = naechsteAdresse
-		counter++
-
+		counterOpcodeList++
 
 		if debug{
 			Println("---------------------------------------------------------------------")
@@ -160,6 +160,7 @@ func main(){
 			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
 		}
     }
+	Println(opcodeList)
 }
 /*
 		for _,line := range(codeArray){	

@@ -17,6 +17,11 @@ ADR3 = $140
 ;			STX ADR2
 ;			STX AD
 		LDA ADR1
+		LDA ADR2
+		LDA ADR3
+		LDA ADR1
+		LDA #$22
+		LDA $FF
 ;			ADC ADR2
 ;			STA ADR3
 ;			·END
