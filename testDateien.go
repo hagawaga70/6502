@@ -6,6 +6,7 @@ import "./dateien"
 import ."fmt"
 import "regexp"
 import "strings"
+import "sort"
 //import "reflect"
 import ."./assembler"
 
@@ -19,9 +20,9 @@ func main(){
 	var codeLine 		string
 	var startAdresse 	string
 	var opcode 			[]string
-	var takte			string
+	var err				bool	
 	var naechsteAdresse string
-	var debug bool = true
+	var debug bool = false
 	opcodeList := map[int][]string{}
 
 	befehleListe := map[string][]string{
@@ -34,7 +35,7 @@ func main(){
 	"PHP":{},"PLA":{},"PLP":{},"ROL":{},"ROR":{},"RTI":{},
 	"RTS":{},"SBC":{},"SEC":{},"SED":{},"SEI":{},"STA":{},
 	"STX":{},"STY":{},"TAX":{},"TAY":{},"TSX":{},"TXS":{},
-	"TXA":{},"TYA":{}}
+	"TXA":{},"TYA":{},"·END":{}}
 
 	// Öffnen der Programmdatei
 	dateiInhalt := dateien.Oeffnen("./programm.hag",'l')
@@ -76,7 +77,7 @@ func main(){
 
 
 
-		for _,codeLine = range(hagCodeArray){
+	for _,codeLine = range(hagCodeArray){
 		//Println(codeLine)
 
 		// Überspringe leere Zeilen
@@ -141,17 +142,30 @@ func main(){
 			pseudoBefehleHASH[codeArray[0]] = []string{"$"+startAdresse}
 			codeArray = codeArray[1:]
 		}
-		Println(codeArray[0])
-		if 	codeArray[0] == "LDA" ||
-		 	codeArray[0] == "LDX" ||
-		 	codeArray[0] == "LDY" ||
-			codeArray[0] == "STA" ||
-			codeArray[0] == "STX" ||
-			codeArray[0] == "STY" {
-			 opcode,takte,naechsteAdresse = assemble.TranslateXXX(codeArray,pseudoBefehleHASH,startAdresse)
+		if			codeArray[0] == "ADC" ||
+					codeArray[0] == "LDA" ||
+					codeArray[0] == "LDX" ||
+					codeArray[0] == "LDY" ||
+					codeArray[0] == "STA" ||
+					codeArray[0] == "STX" ||
+					codeArray[0] == "STY" {
+
+			 opcode,err,naechsteAdresse = assemble.TranslateXXX(codeArray,pseudoBefehleHASH,startAdresse)
+
+		}else if 	codeArray[0] == "CLC" ||
+					codeArray[0] == "CLD"	{
+
+			 opcode,err,naechsteAdresse = assemble.TranslateModifyFlags(codeArray,startAdresse)
+
+		}else if  	codeArray[0] == "·END" {
+			break
+		}else{
+			panic("Der Befehl ist nicht im Befehlssatz vorhanden!!!")
 		}
 
-		opcodeList[counterOpcodeList] = []string{startAdresse,takte}
+
+
+		opcodeList[counterOpcodeList] = []string{startAdresse}
 		opcodeList[counterOpcodeList] = append(opcodeList[counterOpcodeList],opcode...)
 
 		startAdresse = naechsteAdresse
@@ -159,59 +173,25 @@ func main(){
 
 		if debug{
 			Println("---------------------------------------------------------------------")
-			Println("testDateien -opcode -takte")
+			Println("testDateien -opcode -err")
 			Println(opcode)
-			Println(takte)
+			Println(err)
 			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
 		}
     }
-	Println(opcodeList)
+	// To store the keys in slice in sorted order
+    var keys []int
+    for k := range opcodeList {
+        keys = append(keys, k)
+    }
+    sort.Ints(keys)
+
+    // To perform the opertion you want
+    for _, k := range keys {
+        Println("Key:", k)
+        Println("Value:", opcodeList[k])
+    }
 }
-/*
-		for _,line := range(codeArray){	
-			for _,value := range(opcode){
-				Println(value)
-			}
-			Println(takte)
-		}
-	}
-*/
-
-/*
-// Create map of string slices.
-    m := map[string][]string{
-						// 101b bb01								
-        "LDA": {"--",	// 			 IMPLIZIT
-				"--",	// 			 AKKUMULATOR	
-				"AD",	// 1010 1101 ABSOLUT		<-realisert
-				"A5",	// 1010 0101 SEITE 0 		<-realisert
-				"A9",	// 1010 1001 UNMITTELBAR	<-realisert
-				"BD",	// 1011 1101 ABS.X
-				"B9",	// 1011 1001 ABS.Y
-				"A1",	// 1010 0001 (IND,X)
-				"B1",	// 1011 0001 (IND,Y)
-				"B5",	// 1011 0101 SEITE 0,X
-				"--",	// 			 SEITE 0,Y
-				"--",	// 			 RELATIV
-				"--",},	// 			 INDIREKT
-        "AND": {},
-    }
-
-// Add a string at the dog key.
-    // ... Append returns the new string slice.
-    res := append(m["dog"], "brown")
-
-    // Add a key for fish.
-    m["fish"] = []string{"orange", "red"}
-
-    // Print slice at key.
-    Println(m["fish"])
-
-    // Loop over string slice at key.
-    for i := range m["fish"] {
-        Println(i, m["fish"][i])
-    }
-*/
 
 
 
