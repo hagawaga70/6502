@@ -1,1 +1,13 @@
-	translateModifyFlags(assemblerCode []string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string)
+	// To store the keys in slice in sorted order
+    var keys []int
+    for k := range opcodeList {
+        keys = append(keys, k)
+    }
+    sort.Ints(keys)
+
+    // To perform the opertion you want
+    for _, k := range keys {
+        Println("Key:", k)
+        Println("Value:", opcodeList[k])
+    }
+	return opcodeList
