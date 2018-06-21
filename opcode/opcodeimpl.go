@@ -7,7 +7,7 @@ import "regexp"
 import "strings"
 import ."../assembler"
 
-func GetOpcodeList(hagCode string)(opcodeList map[int][]string){
+func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string][]string){
 
 	var assemble Assembler = NewAssembler() 
 	var codeLine 		string
@@ -20,7 +20,8 @@ func GetOpcodeList(hagCode string)(opcodeList map[int][]string){
 	var counterOpcodeList 	int						// Zeilennummerierung für die opcodeList
 	//var counter 			int
 
-	//opcodeList := map[int][]string{} //Deklarierung der HashListe
+	opcodeList 				:= map[int][]string{} //Deklarierung der HashListe
+	assemblerCodeList 		:= map[int][]string{} //Deklarierung der HashListe
 
 	// Liste der Assemblerbefehle
 	befehleListe := map[string][]string{
@@ -123,6 +124,7 @@ func GetOpcodeList(hagCode string)(opcodeList map[int][]string){
 			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
 		}
 		codeArray:=strings.Fields(codeLine)
+		assemblerCodeList[counterOpcodeList] = append(assemblerCodeList[counterOpcodeList],codeArray...)
 
 		// Eine Sprungmarke wird abgespeichert
 		if _, ok := befehleListe[codeArray[0]]; !ok {
@@ -165,7 +167,7 @@ func GetOpcodeList(hagCode string)(opcodeList map[int][]string){
 			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
 		}
     }
-	return opcodeList
+	return opcodeList,assemblerCodeList,pseudoBefehleHASH
 }
 
 

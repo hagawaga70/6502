@@ -66,7 +66,7 @@ befehleListe := map[string][]string{
 		"TYA":{}}
 */
 func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
-	var debug bool = true
+	var debug bool = false
 	adresse1Byte1Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})$`)	// - Initialisiere Suchmuster 1 Bit einstellig
 	adresse1Byte2Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 1 Bit zweistellig
 	adresse2Byte3Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit dreistellig

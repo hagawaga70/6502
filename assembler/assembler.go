@@ -10,6 +10,7 @@ type Assembler interface {
 	//		 gegeben. Eine Fehlermeldung "err" ist zurückgegeben. Im Fehlerfall enthält das OPcodeSlice eine
 	//		 Aussagekräftige Fehlermeldung
 	TranslateXXX(assemblerCode []string, pseudoBefehle map[string][]string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string)
+
 	// Vor.: -
 	// Erg.:  Die hexadezimale Übersetzung des (CLC,CLD)-Befehls ist zurückgegeben 
 	TranslateModifyFlags(assemblerCode []string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string)

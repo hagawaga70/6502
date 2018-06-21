@@ -11,7 +11,7 @@ ADR3 = $140; Adresse einem Pseudobefehl zuweisen
 TEST	STY ADR2
 		LDA ADR1
 		ADC ADR2
-		STA ADR3
+		STA ADA3
 		LDA #$25
 		·END
 

@@ -1,3 +1,17 @@
+	var buffer  []byte
+	var counter int
+
+	dateiInhalt := dateien.Oeffnen("./programm.hag",'l')
+	for !dateiInhalt.Ende(){
+		buffer = append(buffer,dateiInhalt.Lesen())
+		counter++
+	}
+	dateiInhalt.Schliessen()
+
+	// Umwandeln der Bytes in EINE Zeichenkette
+	hagCode 	:= 	string(buffer[:counter])
+	opcodeList,assenblerCodeListe,pseudoCodeListe	:=	opcode.GetOpcodeList(hagCode) 
+
 	// To store the keys in slice in sorted order
     var keys []int
     for k := range opcodeList {
@@ -10,4 +24,5 @@
         Println("Key:", k)
         Println("Value:", opcodeList[k])
     }
-	return opcodeList
+	Println(assenblerCodeListe)
+	Println(pseudoCodeListe)

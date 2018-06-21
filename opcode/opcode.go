@@ -9,7 +9,6 @@ package opcode
 
 
 /*	Vor.: --
-	Erg.: Eine opcode-Liste ist zurückgegeben
-	:
-	func GetOpcodeList(hagCode string)(opcodeListmap [int][]string)
+	Erg.: Eine opcode-Liste, eine assebler-Code-Liste und eine Pseudocodeliste ist zurückgegeben
+	func GetOpcodeList(hagCode string)(map[int][]string,map[int][]string,map[string][]string)
 */

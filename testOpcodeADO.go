@@ -27,7 +27,7 @@ func main() {
 
 	// Umwandeln der Bytes in EINE Zeichenkette
 	hagCode 	:= 	string(buffer[:counter])
-	opcodeList	:=	opcode.GetOpcodeList(hagCode) 
+	opcodeList,assenblerCodeListe,pseudoCodeListe	:=	opcode.GetOpcodeList(hagCode) 
 
 	// To store the keys in slice in sorted order
     var keys []int
@@ -41,4 +41,6 @@ func main() {
         Println("Key:", k)
         Println("Value:", opcodeList[k])
     }
+	Println(assenblerCodeListe)
+	Println(pseudoCodeListe)
 }
