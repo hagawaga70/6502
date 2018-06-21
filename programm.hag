@@ -1,6 +1,6 @@
 ;
  ;
-ADR1 = #$10
+ADR1 = $100
 
 ADR2 = $120
 
@@ -11,16 +11,16 @@ ADR3 = $140
 	  *=$600
 ;			CLD
 ;			CLC
-;			LDX #$5
-;			STX ADR1
+			LDX #$5
+			STX ADR1
 	TEST	LDA #$25
-;			STX ADR2
-;			STX AD
+			STX ADR2
+			STX ADR1
 		LDA ADR1
 		LDA ADR2
 		LDA ADR3
 		LDA ADR1
 		LDA TEST
 ;			ADC ADR2
-;			STA ADR3
+			STA ADR3
 ;			·END

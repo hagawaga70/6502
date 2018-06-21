@@ -137,17 +137,22 @@ func main(){
 
 		// Eine Sprungmarke wird abgespeichert
 		if _, ok := befehleListe[codeArray[0]]; !ok {
-			
+
 			pseudoBefehleHASH[codeArray[0]] = []string{"$"+startAdresse}
 			codeArray = codeArray[1:]
 		}
 		Println(codeArray[0])
-		if codeArray[0] == "LDA"{
-			opcode,takte,naechsteAdresse = assemble.TranslateLDA(codeArray,pseudoBefehleHASH,startAdresse)
+		if 	codeArray[0] == "LDA" ||
+		 	codeArray[0] == "LDX" ||
+		 	codeArray[0] == "LDY" ||
+			codeArray[0] == "STA" ||
+			codeArray[0] == "STX" ||
+			codeArray[0] == "STY" {
+			 opcode,takte,naechsteAdresse = assemble.TranslateXXX(codeArray,pseudoBefehleHASH,startAdresse)
 		}
 
-    	opcodeList[counterOpcodeList] = []string{startAdresse,takte}
-    	opcodeList[counterOpcodeList] = append(opcodeList[counterOpcodeList],opcode...)
+		opcodeList[counterOpcodeList] = []string{startAdresse,takte}
+		opcodeList[counterOpcodeList] = append(opcodeList[counterOpcodeList],opcode...)
 
 		startAdresse = naechsteAdresse
 		counterOpcodeList++

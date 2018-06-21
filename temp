@@ -1,5 +1,11 @@
-			fmt.Println("---------------------------------------------------------------------")
-			fmt.Println("testDateien -opcode -takte")
-			fmt.Println(opcode)
-			fmt.Println(takte)
-			fmt.Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
+	befehleListe := map[string][]string{
+	"ADC":{},"AND":{},"ASL":{},"BCC":{},"BCS":{},"BEQ":{},
+	"BIT":{},"BMI":{},"BNE":{},"BPL":{},"BRK":{},"BVC":{},
+	"BVS":{},"CLC":{},"CLD":{},"CLI":{},"CMP":{},"CLV":{},
+	"CPX":{},"CPY":{},"DEC":{},"DEX":{},"DEY":{},"EOR":{},
+	"INC":{},"INX":{},"INY":{},"JMP":{},"JSR":{},"LDA":{},
+	"LDX":{},"LDY":{},"LSR":{},"NOP":{},"ORA":{},"PHA":{},
+	"PHP":{},"PLA":{},"PLP":{},"ROL":{},"ROR":{},"RTI":{},
+	"RTS":{},"SBC":{},"SEC":{},"SED":{},"SEI":{},"STA":{},
+	"STX":{},"STY":{},"TAX":{},"TAY":{},"TSX":{},"TXS":{},
+	"TXA":{},"TYA":{}}

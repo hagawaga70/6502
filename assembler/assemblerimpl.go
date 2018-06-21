@@ -15,9 +15,61 @@ func NewAssembler() *impl {
 	r = new(impl)
 	return r
 }
+/*
+befehleListe := map[string][]string{
+		"ADC":{},
+		"AND":{},
+		"ASL":{},
+		"BCC":{},
+		"BCS":{},
+		"BEQ":{},
+		"BIT":{},
+		"BMI":{},
+		"BNE":{},
+		"BPL":{},
+		"BRK":{},
+		"BVC":{},
+		"BVS":{},
+		"CLC":{"18"},
+		"CLD":{"D8"},
+		"CLI":{},
+		"CMP":{},
+		"CLV":{},
+		"CPX":{},
+		"CPY":{},
+		"DEC":{},
+		"DEX":{},
+		"DEY":{},
+		"EOR":{},
+		"INC":{},
+		"INX":{},
+		"INY":{},
+		"JMP":{},
+		"JSR":{},
+		"LSR":{},
+		"NOP":{},
+		"ORA":{},
+		"PHA":{},
+		"PHP":{},
+		"PLA":{},
+		"PLP":{},
+		"ROL":{},
+		"ROR":{},
+		"RTI":{},
+		"RTS":{},
+		"SBC":{},
+		"SEC":{},
+		"SED":{},
+		"SEI":{},
+		"TAX":{},
+		"TAY":{},
+		"TSX":{},
+		"TXS":{},
+		"TXA":{},
+		"TYA":{}}
+*/
 func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
 	var debug bool = true
-
 	adresse1Byte1Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})$`)	// - Initialisiere Suchmuster 1 Bit einstellig
 	adresse1Byte2Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 1 Bit zweistellig
 	adresse2Byte3Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit dreistellig
@@ -110,24 +162,37 @@ func check8BitWert(adresse string,pseudoBefehle map[string][]string)(hex []strin
 	return
 }
 
-func (r *impl) TranslateLDA	(assemblerCode []string,pseudoBefehle map[string][]string, aktuelleAdresse string) ( optcode []string, takte string, naechsteAdresse string) {
+	
+func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]string, aktuelleAdresse string) ( optcode []string, takte string, naechsteAdresse string) {
 	// Entspricht die Syntax der absoluten Addressierung oder der Addressierug der Seite 0
 	var adressOffset int
+	
+	// Folgende Parameter werden in der Befehlsliste pro Befehl abgelegt
+	// IMPLIZIT AKKUMULATOR ABSOLUT SEITE0 UNMITTELBAR ABS.X ABS.Y (IND,X) (IND,Y) SEITE0.Y RELATIV INDIREKT
+	befehleListe := map[string][]string{
+		"LDA":{"--","--","AD","A5","A9","BD","B9","A1","B1","B5","--","--","--"}, 	//Umgesetzt: --11100000---
+		"LDX":{"--","--","AE","A6","A2","--","BE","--","--","--","B6","--","--"},	//Umgesetzt: --111-0---0--
+		"LDY":{"--","--","AC","A4","A0","BC","--","--","--","B4","--","--","--"},	//Umgesetzt: --1110---0---
+		"STA":{"--","--","8D","85","--","9D","99","81","91","95","--","--","--"}, 	//Umgesetzt: --11-00000---
+		"STX":{"--","--","8E","86","--","--","--","--","--","--","96","--","--"}, 	//Umgesetzt: --111----0---
+		"STY":{"--","--","8C","84","--","--","--","--","--","--","94","--","--"}} 	//Umgesetzt: --111----0---
+	
+
 	if hexa,hit := checkAdresse(assemblerCode[1],pseudoBefehle);hit == true{	 
 		// Seite 0
 		if len(hexa)==1{
-			optcode = append(optcode, "A5") 			// 101bbb01 1010 0101
-			optcode = append(optcode, hexa[0]) 			// Hexadezimale Zahl ohne Dollarzeichen
-			takte = "3"									// Anzahl der benötigten Takte
-			adressOffset=3								// Zwei Byte bis zur nächsten freien Adresse
+			optcode = append(optcode, befehleListe[assemblerCode[0]][3]) 			// 
+			optcode = append(optcode, hexa[0]) 										// Hexadezimale Zahl ohne Dollarzeichen
+			takte = "3"																// Anzahl der benötigten Takte
+			adressOffset=len(optcode)+1												// x Byte bis zur nächsten freien Adresse
 
 		// Absolut	
 		}else if len(hexa)==2{
-			optcode = append(optcode, "AD")				// 101bbb01 1010 1101
-			optcode = append(optcode, hexa[0])			// Hexadezimale Zahl ohne Dollarzeichen
-			optcode = append(optcode, hexa[1])			// Hexadezimale Zahl ohne Dollarzeichen
-			takte = "4"									// Anzahl der benötigten Takte
-			adressOffset=4								// Zwei Byte bis zur nächsten freien Adresse
+			optcode = append(optcode, befehleListe[assemblerCode[0]][2]) 			// 
+			optcode = append(optcode, hexa[0])										// Hexadezimale Zahl ohne Dollarzeichen
+			optcode = append(optcode, hexa[1])										// Hexadezimale Zahl ohne Dollarzeichen
+			takte = "4"																// Anzahl der benötigten Takte
+			adressOffset=len(optcode)+1												// x Byte bis zur nächsten freien Adresse
 
 			//optcode = append(optcode, "Fehler bei der Übersetzung des Befehls LDA")
 			//optcode = append(optcode, "001: Das zweite Byte entspricht nicht der Anforderungen z.B. $0A oder $0a" )
@@ -141,10 +206,10 @@ func (r *impl) TranslateLDA	(assemblerCode []string,pseudoBefehle map[string][]s
 
 	// Adressierungsart: unmittelbar
 	}else if hexa,hit := check8BitWert(assemblerCode[1],pseudoBefehle);hit == true{	
-		optcode = append(optcode, "A9") 			// 101bbb01 1010 1001
+		optcode = append(optcode, befehleListe[assemblerCode[0]][3]) 			// 
 		optcode = append(optcode, hexa[0]) 			// Hexadezimale Zahl ohne Dollarzeichen
 		takte 	= "2"									// Anzahl der benötigten Takte
-		adressOffset=3								// Ein Byte bis zur nächsten freien Adresse
+		adressOffset=len(optcode)+1												// x Byte bis zur nächsten freien Adresse
 
 	// Fehlermeldung
 	}else{
