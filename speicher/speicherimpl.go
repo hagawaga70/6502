@@ -11,7 +11,7 @@ func NewSpeicher() *impl {
 	s = new(impl)
 	return s
 }
-func (s *impl) Lesen(speicherbereich []int16) (daten []byte, takte int) {
+func (s *impl) Lesen(speicherbereich []uint16) (daten []byte, takte int) {
 	if len(speicherbereich) == 1 { // - Übergabe einer einzelnen Adresse
 		daten = append(daten, s.speicher[speicherbereich[0]]) // - Der Inhalt der Adresse wird i, Array Daten gespeichert
 		return daten, 0                                       // - Der zweite Rückgabewert ist die Anzahl der benötigten Takte. Derzeit ohne Funktion
@@ -26,7 +26,7 @@ func (s *impl) Lesen(speicherbereich []int16) (daten []byte, takte int) {
 	}
 }
 
-func (s *impl) Schreiben(speicherbereich []int16, daten []byte) (takte int) {
+func (s *impl) Schreiben(speicherbereich []uint16, daten []byte) (takte int) {
 	if len(speicherbereich) == 1 { // - Der Speicher einer einzelnen Adresse soll neu beschreiben werden
 		s.speicher[speicherbereich[0]] = daten[0] // - Beschreiben der Speicheradresse mit neuen Daten
 		takte = 0

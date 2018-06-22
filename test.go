@@ -4,26 +4,30 @@ package main
 import . "./speicher"
 import . "./register"
 import . "gfx"
-
-//import "time"
 import . "./gfxElemente"
-
-//import "strconv"
-
 import "fmt"
+import "./dateien"
+import "sort"
+import "./opcode"
+import "strconv"
+import "os"
+import "encoding/binary"
+
 
 func main() {
 	var speicher64k Speicher 	= NewSpeicher()
 
-	var x_register Register 	= NewRegister()
-	var y_register Register 	= NewRegister()
-	var stapelzeiger 			= NewRegister()
-	var akku 					= NewRegister()
-	var statusbits 				= NewRegister()
+	var x_register 			Register 	= NewRegister()
+	var y_register 			Register 	= NewRegister()
+	var programmZaehlerHigh	Register 	= NewRegister()
+	var programmZaehlerLow	Register 	= NewRegister()
+	var stapelzeiger 		Register	= NewRegister()
+	var akku 				Register	= NewRegister()
+	var statusbits 			Register	= NewRegister()
 
 	var gfxElement01 GfxElement = NewGfxElement()
-	var takte int
-	var speicher []byte
+	//var takte int
+	var speicher1 []byte
 	var speicher2 []byte
 	var speicher3 []byte
 	var speicher4 []byte
@@ -40,71 +44,178 @@ func main() {
 	var flagStatusINT int 
 	var flagStatusAlt []int =[]int{0,0,0,0,0,0,0,0}
 
+	var buffer  []byte
+	var counter int
+	var programmPath string = os.Args[1] // Übergabe des Programmpfades
+
+
+	// Öffnen und lesen der Bytes des auszuführenden Programms
+	dateiInhalt := dateien.Oeffnen(programmPath,'l')
+	for !dateiInhalt.Ende(){
+		buffer = append(buffer,dateiInhalt.Lesen())
+		counter++
+	}
+	dateiInhalt.Schliessen()
+
+
+	// Umwandeln der Bytes in EINE Zeichenkette
+	hagCode 	:= 	string(buffer[:counter])
+
+	// Umwandeln des Assemblerprogramms in eine opcodeListe. Die Zeilen des Assemblerprogramms
+	// und eine Liste der Pseudobefehle wird auch ausgegeben.
+	opcodeList,assenblerCodeListe,pseudoCodeListe	:=	opcode.GetOpcodeList(hagCode) 
+
+	// Die Key des Hashes "opcodeList" sind die Zeilennummern des Assemblerprogramms diese Keys
+	// werden hier sortiert
+    var keys []int
+    for k := range opcodeList {
+        keys = append(keys, k)
+    }
+
+    sort.Ints(keys)
+
+
+	// Die Opcodes werden hier in den Speicher geladen
+	var switcher 			bool
+	var singleOpcode		[]byte
+	var opcodeFragment 		byte
+	var stopAdresse 		uint16
+	var startAdresse 		uint16
+	var startAdressePcHEX 	string = pseudoCodeListe["$t@rt@dre$$e"][0]
+
+	var pcHigh 		byte
+	var pcLow 		byte
+	var pcHighOld 	byte
+	var pcLowOld 	byte
+
+	opcodeRegister :=  map[string]int{} 
+
+    for _, k := range keys {
+		// Im opcodeRegister wird der befehl-Opcode und seine jeweilige Länge gespeichert
+		opcodeRegister[opcodeList[k][1]] = len(opcodeList[k])-1
+		singleOpcode = []byte{}
+		startAdresseUINT64, err := strconv.ParseUint(opcodeList[k][0], 16, 16) // Die hexadezimale Adresse wird in eine uint16 konvertiert 
+		startAdresse = uint16(startAdresseUINT64)
+		stopAdresse = startAdresse
+		if err!=nil{
+			panic(err)
+		}
+		switcher = true
+		// Auslesen der einzelnen Elemente eines einzelnen Opcodes
+		for _,value := range opcodeList[k]{
+			fmt.Println(value)
+			if  switcher{			// Das erste Element speichert die Startadresse und wird daher übersprungen
+				switcher = false
+				continue
+			}
+			opcodeFragmentUINT64, err := strconv.ParseUint(value, 16, 8) // Die hexadezimale Adresse wird in eine uint16 konvertiert 
+			if err!=nil{
+				panic(err)
+			}
+
+			opcodeFragment = byte(uint8(opcodeFragmentUINT64))
+			singleOpcode = append(singleOpcode,opcodeFragment)
+			stopAdresse++
+		}
+		// Abspeichern der einzelnen Opcodeelemente(Byte) pro Opcode
+		_ = speicher64k.Schreiben([]uint16{startAdresse,stopAdresse-1}, singleOpcode)
+    }
+	fmt.Println(assenblerCodeListe)
+	fmt.Println(pseudoCodeListe)
+
+
 	Fenster(1920, 1200)
 	for i := 0; i < 3; i++ {
+	//for {
+		startAdressePcUINT64, err := strconv.ParseUint(startAdressePcHEX, 16, 16) // Die hexadezimale Adresse wird in eine uint64 
+																				  // konvertiert 
+		if err!=nil{
+			panic(err)
+		}
+
+		startAdressePcUINT16 := uint16(startAdressePcUINT64)
+		startAdresseByte := make([]byte, 2)						// Ein Slice mit zwei Byte wird erstellt
+		binary.BigEndian.PutUint16(startAdresseByte, startAdressePcUINT16)
+
+		_ = programmZaehlerHigh.SchreibenByte(startAdresseByte[0])
+		_ = programmZaehlerLow.SchreibenByte(startAdresseByte[1])
+
+		//labelZeile = "[" + hex.EncodeToString([]byte{Itoa(int(seite)*256 + i)}) + "] " + labelZeile
+		//labelZeile = "[" + hex.EncodeToString([]byte(adresseByte)) + "] " + labelZeile
+
+
+
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
 
-		takte = speicher64k.Schreiben([]int16{256, 259}, []byte{byte(10), byte(3), byte(4), byte(5)})
-		speicher , 	takte = speicher64k.Lesen([]int16{256	, 511})
-		speicher2, 	takte = speicher64k.Lesen([]int16{0		, 255})
-		speicher3, 	takte = speicher64k.Lesen([]int16{0		, 255})
-		speicher4, 	takte = speicher64k.Lesen([]int16{0		, 255})
-		fmt.Println(speicher)
+		speicher1, 	_ = speicher64k.Lesen([]uint16{0		, 255})
+		speicher2, 	_ = speicher64k.Lesen([]uint16{256		, 511})
+		speicher3, 	_ = speicher64k.Lesen([]uint16{512		, 767})
+		speicher4, 	_ = speicher64k.Lesen([]uint16{768		, 1023})
+		//speicher4, 	_ = speicher64k.Lesen([]uint16{65280	, 65535})
 		UpdateAus()
-		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher2		)	
-		gfxElement01.AbbildSpeicherseite1(411	, 10	, 1		, speicher		)
+		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher1		)	
+		gfxElement01.AbbildSpeicherseite1(411	, 10	, 1		, speicher2		)
 		gfxElement01.AbbildSpeicherseite1(812	, 10	, 2		, speicher3		)
-		gfxElement01.AbbildSpeicherseite1(1213	, 10	, 255	, speicher4		)
+		gfxElement01.AbbildSpeicherseite1(1213	, 10	, 3		, speicher4		)
 		//time.Sleep(1000000000)
-		fmt.Println(takte)
-		fmt.Println(speicher)
 
 
 		// Label Register-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(1630,10,"Register",24,0,0,255)
 		// Anzeigen des X-Registers -------------------------------------------------------------------------
-		registerXdaten, takte = x_register.LesenByte()
+		registerXdaten, _ = x_register.LesenByte()
 		gfxElement01.AbbildRegister(1630, 40, "X-Register", registerXdaten, registerXdatenAlt)
 		registerXdatenAlt = registerXdaten
-		takte = x_register.SchreibenByte(byte(5 + i))
 		// <<---------------------------------------------------------------------------------------------------
 
 		// Anzeigen des Y-Registers ----------------------------------------------------------------------------
-/*		takte = y_register.SchreibenByte(byte(12 + i))*/
-		registerYdaten, takte = y_register.LesenByte()
+/*		_ = y_register.SchreibenByte(byte(12 + i))*/
+		registerYdaten, _ = y_register.LesenByte()
 		gfxElement01.AbbildRegister(1630, 70, "Y-Register", registerYdaten, registerYdatenAlt)
 		registerYdatenAlt = registerYdaten
 		// <<---------------------------------------------------------------------------------------------------
 
 		// Anzeigen des Akkus ----------------------------------------------------------------------------------
-		akkuDaten, takte = akku.LesenByte()
+		akkuDaten, _ = akku.LesenByte()
 		gfxElement01.AbbildRegister(1630, 100, "Akku", akkuDaten, akkuDatenAlt)
 		akkuDatenAlt = akkuDaten
-		takte = akku.SchreibenByte(byte(2 + i))
+		_ = akku.SchreibenByte(byte(2 + i))
 		// <<---------------------------------------------------------------------------------------------------
 		
 		// Label Stapelzeiger-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(1630,130,"Stapelzeiger",24,0,0,255)
 		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
-/*		takte = stapelzeiger.SchreibenByte(byte(15 + i))*/
-		stapelzeigerDaten, takte = stapelzeiger.LesenByte()
+/*		_ = stapelzeiger.SchreibenByte(byte(15 + i))*/
+		stapelzeigerDaten, _ = stapelzeiger.LesenByte()
 		gfxElement01.AbbildRegister(1630, 160, "SZ", stapelzeigerDaten, stapelzeigerDatenAlt)
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
-			
+
 		// Label ProgrammzählerFlags-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(1630,190,"Progammzähler",24,0,0,255)
 
+		// Anzeigen des Programmzählers ----------------------------------------------------------------------------
+		pcHigh, _ 	= programmZaehlerHigh.LesenByte()
+		pcLow, _ 	= programmZaehlerLow.LesenByte()
+
+		gfxElement01.AbbildRegister(1630, 220, "High", pcHigh, pcHighOld)
+		pcHighOld = pcHigh
+
+		gfxElement01.AbbildRegister(1630, 250, "Low", pcLow, pcLowOld)
+		pcLowOld = pcLow
+		// <<---------------------------------------------------------------------------------------------------
+		// <<---------------------------------------------------------------------------------------------------
+
 
 		// Label Flags-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,220,"Flags",24,0,0,255)
+		gfxElement01.AbbildLabel(1630,280,"Flags",24,0,0,255)
 
 		// Anzeigen der Flags  ---------------------------------------------------------------------------------
 		fmt.Println("-------------------------------------------------------------------------------------")
 
 		for  index,flag := range(flags){
-			flagStatusBOOL, takte =statusbits.LeseBit( uint(index))
+			flagStatusBOOL, _ =statusbits.LeseBit( uint(index))
 			fmt.Println(flagStatusBOOL)	
 			fmt.Println(flag)	
 			if flagStatusBOOL {
@@ -112,14 +223,21 @@ func main() {
 			}else{
 				flagStatusINT = 0
 			}
-			gfxElement01.AbbildFlag(1630, uint16(250+index*30), flag, flagStatusINT, flagStatusAlt[index])
+			gfxElement01.AbbildFlag(1630, uint16(310+index*30), flag, flagStatusINT, flagStatusAlt[index])
 			flagStatusAlt[index]= flagStatusINT
 		}
 		// <<---------------------------------------------------------------------------------------------------
-		takte = statusbits.SetzeBit(0)
+		_ = statusbits.SetzeBit(0)
 		
 		// Label ProgrammzählerFlags-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,190,"Progammzähler",24,0,0,255)
+		gfxElement01.AbbildLabel(1630,340,"Progammzähler",24,0,0,255)
+
+		// Label AssemblerCode-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(10,950,"Assembler-Code",24,0,0,255)
+		gfxElement01.AbbildLabel(10,950,"Assembler-Code",24,0,0,255)
+
+		// Label Opcode-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(10,1050,"Opcode",24,0,0,255)
 
 
 
@@ -127,4 +245,6 @@ func main() {
 		TastaturLesen1()
 		Cls()
 	}
+
+		fmt.Println("Register", opcodeRegister)
 }

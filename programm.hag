@@ -1,7 +1,7 @@
 ADR1 = $100; Adresse einem Pseudobefehl zuweisen
 ADR2 = $120; Adresse einem Pseudobefehl zuweisen
 ADR3 = $140; Adresse einem Pseudobefehl zuweisen
-*=$600; Erste Speicheradresse des Programms
+*=$0300; Erste Speicheradresse des Programms
 
 		CLD
 		CLC
