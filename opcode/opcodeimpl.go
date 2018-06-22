@@ -7,6 +7,37 @@ import "regexp"
 import "strings"
 import ."../assembler"
 
+
+
+/*
+func ExecuteOpcode(opcode []string){
+
+codeArray[0] == "ADC" 
+codeArray[0] == "LDA" 
+codeArray[0] == "LDX" 
+codeArray[0] == "LDY" 
+codeArray[0] == "STA" 
+codeArray[0] == "STX" 
+codeArray[0] == "STY" 
+                      
+err,naechsteAdresse = 
+                      
+codeArray[0] == "CLC" 
+codeArray[0] == "CLD" 
+                      
+err,naechsteAdresse = 
+
+	switch opcode[0]{
+		case "18":
+
+		case "linux":
+			fmt.Println("Linux.")
+		default:
+	}
+} 
+
+
+*/
 func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string][]string){
 
 	var assemble Assembler = NewAssembler() 

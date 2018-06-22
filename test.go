@@ -12,11 +12,11 @@ import "./opcode"
 import "strconv"
 import "os"
 import "encoding/binary"
+import "encoding/hex"
 
 
 func main() {
-	var speicher64k Speicher 	= NewSpeicher()
-
+	var speicher64k 		Speicher 	= NewSpeicher()
 	var x_register 			Register 	= NewRegister()
 	var y_register 			Register 	= NewRegister()
 	var programmZaehlerHigh	Register 	= NewRegister()
@@ -120,12 +120,16 @@ func main() {
 		// Abspeichern der einzelnen Opcodeelemente(Byte) pro Opcode
 		_ = speicher64k.Schreiben([]uint16{startAdresse,stopAdresse-1}, singleOpcode)
     }
+	fmt.Println("Register",opcodeRegister)
 	fmt.Println(assenblerCodeListe)
 	fmt.Println(pseudoCodeListe)
-
+	var getOpcode []byte
+	var opcodeHeadAdresse uint16
+	var switchStartAdresse bool = true
+	var anzahlOpcodeElemente int
 
 	Fenster(1920, 1200)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 	//for {
 		startAdressePcUINT64, err := strconv.ParseUint(startAdressePcHEX, 16, 16) // Die hexadezimale Adresse wird in eine uint64 
 																				  // konvertiert 
@@ -133,25 +137,51 @@ func main() {
 			panic(err)
 		}
 
-		startAdressePcUINT16 := uint16(startAdressePcUINT64)
-		startAdresseByte := make([]byte, 2)						// Ein Slice mit zwei Byte wird erstellt
-		binary.BigEndian.PutUint16(startAdresseByte, startAdressePcUINT16)
+		// Einmaliges schreiben der Startadressen in den Programmzähler
+		if switchStartAdresse{
+			startAdressePcUINT16 := uint16(startAdressePcUINT64)
+			startAdresseByte := make([]byte, 2)						// Ein Slice mit zwei Byte wird erstellt
+			binary.BigEndian.PutUint16(startAdresseByte, startAdressePcUINT16)
+			switchStartAdresse = false
 
-		_ = programmZaehlerHigh.SchreibenByte(startAdresseByte[0])
-		_ = programmZaehlerLow.SchreibenByte(startAdresseByte[1])
+			_ = programmZaehlerHigh.SchreibenByte(startAdresseByte[0])
+			_ = programmZaehlerLow.SchreibenByte(startAdresseByte[1])
+		}
 
-		//labelZeile = "[" + hex.EncodeToString([]byte{Itoa(int(seite)*256 + i)}) + "] " + labelZeile
-		//labelZeile = "[" + hex.EncodeToString([]byte(adresseByte)) + "] " + labelZeile
+		// Auslesen des Programmzählers
+		pcHigh, _	= programmZaehlerHigh.LesenByte()
+		pcLow, _	= programmZaehlerLow.LesenByte()
 
+		// Konvertiere byte in uint16
+		opcodeHeadAdresse = binary.BigEndian.Uint16([]byte{pcHigh,pcLow})
 
+		// Lesen der im Programmzähler angegebenen Adresse in Byte
+		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse})  // 
+
+		// Nachschlagen, wie viele weitere Bytes zum Opcode gehören
+		anzahlOpcodeElemente =  opcodeRegister[hex.EncodeToString(getOpcode)]
+		fmt.Println("Anzahl", anzahlOpcodeElemente)
+		fmt.Println("Opcode", hex.EncodeToString(getOpcode))
+		if anzahlOpcodeElemente == 0{
+			opcodeHeadAdresse++
+			fmt.Println("---",opcodeHeadAdresse)
+		//opcode.ExecuteOpcode ( getOpcode,speicher64k, x_register,y_register, programmZaehlerHigh,programmZaehlerLow,stapelzeiger, akku, statusbits)
+
+		}else if anzahlOpcodeElemente >0 {
+			opcodeHeadAdresse= opcodeHeadAdresse+uint16(anzahlOpcodeElemente)+1
+			fmt.Println("---",opcodeHeadAdresse)
+			//opcode.ExecuteOpcode ( getOpcode,speicher64k, x_register,y_register, programmZaehlerHigh,programmZaehlerLow,stapelzeiger, akku, statusbits)
+		}else{
+			panic("Fehler: Nachschlagen, wie viele weitere Bytes zum Opcode gehören")
+		}
 
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
 
-		speicher1, 	_ = speicher64k.Lesen([]uint16{0		, 255})
-		speicher2, 	_ = speicher64k.Lesen([]uint16{256		, 511})
-		speicher3, 	_ = speicher64k.Lesen([]uint16{512		, 767})
-		speicher4, 	_ = speicher64k.Lesen([]uint16{768		, 1023})
+		speicher1,	_ = speicher64k.Lesen([]uint16{0		, 255})
+		speicher2,	_ = speicher64k.Lesen([]uint16{256		, 511})
+		speicher3,	_ = speicher64k.Lesen([]uint16{512		, 767})
+		speicher4,	_ = speicher64k.Lesen([]uint16{768		, 1023})
 		//speicher4, 	_ = speicher64k.Lesen([]uint16{65280	, 65535})
 		UpdateAus()
 		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher1		)	
@@ -229,8 +259,6 @@ func main() {
 		// <<---------------------------------------------------------------------------------------------------
 		_ = statusbits.SetzeBit(0)
 		
-		// Label ProgrammzählerFlags-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,340,"Progammzähler",24,0,0,255)
 
 		// Label AssemblerCode-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(10,950,"Assembler-Code",24,0,0,255)
@@ -239,12 +267,16 @@ func main() {
 		// Label Opcode-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(10,1050,"Opcode",24,0,0,255)
 
+		opcodeHeadAdresse++
+		adressenBytes := make([]byte, 2)						// Ein Slice mit zwei Byte wird erstellt
+		binary.BigEndian.PutUint16(adressenBytes, opcodeHeadAdresse)
+
+		_ = programmZaehlerHigh.SchreibenByte(adressenBytes[0])
+		_ = programmZaehlerLow.SchreibenByte(adressenBytes[1])
 
 
 		UpdateAn()
 		TastaturLesen1()
 		Cls()
 	}
-
-		fmt.Println("Register", opcodeRegister)
 }

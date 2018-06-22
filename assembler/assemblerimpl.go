@@ -166,13 +166,13 @@ func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]st
 	// Folgende Parameter werden in der Befehlsliste pro Befehl abgelegt
 	// IMPLIZIT AKKUMULATOR ABSOLUT SEITE0 UNMITTELBAR ABS.X ABS.Y (IND,X) (IND,Y) SEITE0.Y RELATIV INDIREKT
 	befehleListe := map[string][]string{
-		"ADC":{"--","--","6D","65","69","7D","79","61","71","75","--","--","--"}, 	//Umgesetzt: --11100000---
-		"LDA":{"--","--","AD","A5","A9","BD","B9","A1","B1","B5","--","--","--"}, 	//Umgesetzt: --11100000---
-		"LDX":{"--","--","AE","A6","A2","--","BE","--","--","--","B6","--","--"},	//Umgesetzt: --111-0---0--
-		"LDY":{"--","--","AC","A4","A0","BC","--","--","--","B4","--","--","--"},	//Umgesetzt: --1110---0---
-		"STA":{"--","--","8D","85","--","9D","99","81","91","95","--","--","--"}, 	//Umgesetzt: --11-00000---
-		"STX":{"--","--","8E","86","--","--","--","--","--","--","96","--","--"}, 	//Umgesetzt: --111----0---
-		"STY":{"--","--","8C","84","--","--","--","--","--","--","94","--","--"}} 	//Umgesetzt: --111----0---
+		"ADC":{"--","--","6d","65","69","7d","79","61","71","75","--","--","--"}, 	//Umgesetzt: --11100000---
+		"LDA":{"--","--","ad","a5","a9","bd","b9","a1","b1","b5","--","--","--"}, 	//Umgesetzt: --11100000---
+		"LDX":{"--","--","ae","a6","a2","--","be","--","--","--","b6","--","--"},	//Umgesetzt: --111-0---0--
+		"LDY":{"--","--","ac","a4","a0","bc","--","--","--","b4","--","--","--"},	//Umgesetzt: --1110---0---
+		"STA":{"--","--","8d","85","--","9d","99","81","91","95","--","--","--"}, 	//Umgesetzt: --11-00000---
+		"STX":{"--","--","8e","86","--","--","--","--","--","--","96","--","--"}, 	//Umgesetzt: --111----0---
+		"STY":{"--","--","8c","84","--","--","--","--","--","--","94","--","--"}} 	//Umgesetzt: --111----0---
 
 
 	if hexa,hit := checkAdresse(assemblerCode[1],pseudoBefehle);hit == true{	 
@@ -235,7 +235,7 @@ func (r *impl) TranslateModifyFlags(assemblerCode []string, aktuelleAdresse stri
 	var adressOffset int
 	befehleListe := map[string][]string{
 		"CLC":{"18"},
-		"CLD":{"D8"}}
+		"CLD":{"d8"}}
 	optcode 	 = append(optcode, befehleListe[assemblerCode[0]][0]) 			// 
 	adressOffset = len(optcode)													// x Byte bis zur nächsten freien Adresse
 
