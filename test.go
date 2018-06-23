@@ -74,26 +74,25 @@ func main() {
 
     sort.Ints(keys)
 
-
-	// Die Opcodes werden hier in den Speicher geladen
-	var switcher 			bool
+	// Deklaration vom Variablen
+	var switcher 			bool		//
 	var singleOpcode		[]byte
 	var opcodeFragment 		byte
 	var stopAdresse 		uint16
 	var startAdresse 		uint16
 	var startAdressePcHEX 	string = pseudoCodeListe["$t@rt@dre$$e"][0]
-
+	fmt.Println("startAdressePcHEX",startAdressePcHEX)
 	var pcHigh 		byte
 	var pcLow 		byte
 	var pcHighOld 	byte
 	var pcLowOld 	byte
-
 	opcodeRegister :=  map[string]int{} 
 
+	// Die Opcodes werden hier in den Speicher geladen
     for _, k := range keys {
 		// Im opcodeRegister wird der befehl-Opcode und seine jeweilige Länge gespeichert
 		opcodeRegister[opcodeList[k][1]] = len(opcodeList[k])-1
-		singleOpcode = []byte{}
+		singleOpcode = []byte{}												   // Zuweisung eines leeren Slice
 		startAdresseUINT64, err := strconv.ParseUint(opcodeList[k][0], 16, 16) // Die hexadezimale Adresse wird in eine uint16 konvertiert 
 		startAdresse = uint16(startAdresseUINT64)
 		stopAdresse = startAdresse
@@ -129,10 +128,11 @@ func main() {
 	var anzahlOpcodeElemente int
 
 	Fenster(1920, 1200)
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 8; i++ {
 	//for {
 		startAdressePcUINT64, err := strconv.ParseUint(startAdressePcHEX, 16, 16) // Die hexadezimale Adresse wird in eine uint64 
 																				  // konvertiert 
+		fmt.Println("startAdressePcUINT64",startAdressePcUINT64)
 		if err!=nil{
 			panic(err)
 		}
@@ -154,27 +154,30 @@ func main() {
 
 		// Konvertiere byte in uint16
 		opcodeHeadAdresse = binary.BigEndian.Uint16([]byte{pcHigh,pcLow})
-
+		fmt.Println("Ausgelsen opcodeHeadAdresse",opcodeHeadAdresse)
 		// Lesen der im Programmzähler angegebenen Adresse in Byte
 		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse})  // 
-
+		fmt.Println("Ausgelesene OpcodeHEAD",hex.EncodeToString(getOpcode))
 		// Nachschlagen, wie viele weitere Bytes zum Opcode gehören
 		anzahlOpcodeElemente =  opcodeRegister[hex.EncodeToString(getOpcode)]
 		fmt.Println("Anzahl", anzahlOpcodeElemente)
 		fmt.Println("Opcode", hex.EncodeToString(getOpcode))
-		if anzahlOpcodeElemente == 0{
+
+		opcodeHeadAdresse = opcodeHeadAdresse+uint16(anzahlOpcodeElemente )
+/*
+		if anzahlOpcodeElemente == 1{
 			opcodeHeadAdresse++
 			fmt.Println("---",opcodeHeadAdresse)
 		//opcode.ExecuteOpcode ( getOpcode,speicher64k, x_register,y_register, programmZaehlerHigh,programmZaehlerLow,stapelzeiger, akku, statusbits)
 
-		}else if anzahlOpcodeElemente >0 {
+		}else if anzahlOpcodeElemente >1 {
 			opcodeHeadAdresse= opcodeHeadAdresse+uint16(anzahlOpcodeElemente)+1
 			fmt.Println("---",opcodeHeadAdresse)
 			//opcode.ExecuteOpcode ( getOpcode,speicher64k, x_register,y_register, programmZaehlerHigh,programmZaehlerLow,stapelzeiger, akku, statusbits)
 		}else{
 			panic("Fehler: Nachschlagen, wie viele weitere Bytes zum Opcode gehören")
 		}
-
+*/
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
 
@@ -267,7 +270,7 @@ func main() {
 		// Label Opcode-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(10,1050,"Opcode",24,0,0,255)
 
-		opcodeHeadAdresse++
+		//opcodeHeadAdresse++
 		adressenBytes := make([]byte, 2)						// Ein Slice mit zwei Byte wird erstellt
 		binary.BigEndian.PutUint16(adressenBytes, opcodeHeadAdresse)
 
