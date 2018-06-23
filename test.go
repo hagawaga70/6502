@@ -13,7 +13,7 @@ import "strconv"
 import "os"
 import "encoding/binary"
 import "encoding/hex"
-
+import "strings"
 
 func main() {
 	var speicher64k 		Speicher 	= NewSpeicher()
@@ -64,7 +64,9 @@ func main() {
 	// Umwandeln des Assemblerprogramms in eine opcodeListe. Die Zeilen des Assemblerprogramms
 	// und eine Liste der Pseudobefehle wird auch ausgegeben.
 	opcodeList,assenblerCodeListe,pseudoCodeListe	:=	opcode.GetOpcodeList(hagCode) 
-
+	fmt.Println(opcodeList)
+	fmt.Println(assenblerCodeListe)
+	fmt.Println(pseudoCodeListe)
 	// Die Key des Hashes "opcodeList" sind die Zeilennummern des Assemblerprogramms diese Keys
 	// werden hier sortiert
     var keys []int
@@ -86,12 +88,19 @@ func main() {
 	var pcLow 		byte
 	var pcHighOld 	byte
 	var pcLowOld 	byte
-	opcodeRegister :=  map[string]int{} 
+
+	opcodeRegister 		:=  map[string]int{} 		// Enhält als Schlüssel die hexadezimale Nummer der Opcodes 
+	showOpcode 			:=  map[string][]string{} 	// Enthält als Schlüssel die Adresse des Opcodes und als Werte den gesammten Opcode 
+	showAssemblerCode 	:=  map[string][]string{} 	// Enthält als Schlüssel die Adresse des Opcodes und als Werte den dazugehörigen Assemblercode
 
 	// Die Opcodes werden hier in den Speicher geladen
     for _, k := range keys {
 		// Im opcodeRegister wird der befehl-Opcode und seine jeweilige Länge gespeichert
 		opcodeRegister[opcodeList[k][1]] = len(opcodeList[k])-1
+
+ 		showOpcode[opcodeList[k][0]] 		= opcodeList[k][1:]				// siehe oben
+ 		showAssemblerCode[opcodeList[k][0]] = assenblerCodeListe[k][0:]		// siehe oben
+
 		singleOpcode = []byte{}												   // Zuweisung eines leeren Slice
 		startAdresseUINT64, err := strconv.ParseUint(opcodeList[k][0], 16, 16) // Die hexadezimale Adresse wird in eine uint16 konvertiert 
 		startAdresse = uint16(startAdresseUINT64)
@@ -126,10 +135,12 @@ func main() {
 	var opcodeHeadAdresse uint16
 	var switchStartAdresse bool = true
 	var anzahlOpcodeElemente int
-
 	Fenster(1920, 1200)
+	var pseudoCodeContentSwitch bool 
 	for i := 0; i < 8; i++ {
-	//for {
+		
+		pseudoCodeContentSwitch  = true // Wird für die Anzeige der Pseudocodes benötigt
+
 		startAdressePcUINT64, err := strconv.ParseUint(startAdressePcHEX, 16, 16) // Die hexadezimale Adresse wird in eine uint64 
 																				  // konvertiert 
 		//fmt.Println("startAdressePcUINT64",startAdressePcUINT64)
@@ -184,6 +195,54 @@ func main() {
 		speicher4,	_ = speicher64k.Lesen([]uint16{768		, 1023})
 		//speicher4, 	_ = speicher64k.Lesen([]uint16{65280	, 65535})
 		UpdateAus()
+
+
+		// Label AssemblerCode-------------------------------------------------------------------------
+		fmt.Println("-->",opcodeHeadAdresse-uint16(anzahlOpcodeElemente))
+		fmt.Println("ac",showAssemblerCode)
+		gfxElement01.AbbildLabel(10,950,"Assembler-Code",24,0,0,255)
+		gfxElement01.AbbildLabel(10,980,strings.Join(showAssemblerCode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
+
+		// Label Opcode-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(10,1010,"Opcode",24,0,0,255)
+		gfxElement01.AbbildLabel(10,1040,strings.Join(showOpcode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
+
+
+
+		// Label Pseudocode-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(400,950,"Pseudocode",24,0,0,255)
+		var counter int
+		var y		uint16 = 980
+		var x		uint16 = 200
+		var rowElements int =7
+		for key,list := range pseudoCodeListe{
+			if  key == "$t@rt@dre$$e"{
+				continue
+			}
+			if pseudoCodeContentSwitch && counter==7{
+				rowElements = 7
+				pseudoCodeContentSwitch=false
+			}else if !pseudoCodeContentSwitch{
+				
+				rowElements = 6
+			}
+			if counter == rowElements{
+				y=y+30
+				fmt.Println("x",x)
+				fmt.Println("y",y)
+				gfxElement01.AbbildLabel(400,y,key+"="+list[0],24,0,0,0)
+				x=400
+				counter=0
+			}else{
+				x=x+200
+				fmt.Println("x",x)
+				fmt.Println("y",y)
+				gfxElement01.AbbildLabel(x,y,key+"="+list[0],24,0,0,0)
+				counter++
+			}
+		}
+
+
 		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher1		)	
 		gfxElement01.AbbildSpeicherseite1(411	, 10	, 1		, speicher2		)
 		gfxElement01.AbbildSpeicherseite1(812	, 10	, 2		, speicher3		)
@@ -254,17 +313,8 @@ func main() {
 			flagStatusAlt[index]= flagStatusINT
 		}
 		// <<---------------------------------------------------------------------------------------------------
-		_ = statusbits.SetzeBit(0)
-		
 
-		// Label AssemblerCode-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(10,950,"Assembler-Code",24,0,0,255)
-		gfxElement01.AbbildLabel(10,950,"Assembler-Code",24,0,0,255)
-
-		// Label Opcode-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(10,1050,"Opcode",24,0,0,255)
-
-		//opcodeHeadAdresse++
+		// Der Programmzähler wird auf die Adresse des nächsten Opcode-HEAD gesetzt
 		adressenBytes := make([]byte, 2)						// Ein Slice mit zwei Byte wird erstellt
 		binary.BigEndian.PutUint16(adressenBytes, opcodeHeadAdresse)
 

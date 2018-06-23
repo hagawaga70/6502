@@ -30,6 +30,8 @@ var opcodeHeadHEX = hex.EncodeToString([]byte{opcode[0]})
 var dataAdressUINT16 uint16
 var dataByte []byte
 	switch opcodeHeadHEX{
+
+
 		case "18":	//CLC
 					_ = statusbits.SetzeBitZurueck(0)
 					break

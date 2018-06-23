@@ -1,7 +1,22 @@
 ADR1 = $00; Adresse einem Pseudobefehl zuweisen
 ADR2 = $01; Adresse einem Pseudobefehl zuweisen
 ADR3 = $02; Adresse einem Pseudobefehl zuweisen
-*=$0300; Erste Speicheradresse des Programms
+ADR4 = $02; Adresse einem Pseudobefehl zuweisen
+ADR5 = $02; Adresse einem Pseudobefehl zuweisen
+ADR6 = $02; Adresse einem Pseudobefehl zuweisen
+ADR7 = $02; Adresse einem Pseudobefehl zuweisen
+ADR8 = $02; Adresse einem Pseudobefehl zuweisen
+ADR9 = $02; Adresse einem Pseudobefehl zuweisen
+ADR10= $02; Adresse einem Pseudobefehl zuweisen
+ADR11= $02; Adresse einem Pseudobefehl zuweisen
+ADR12= $02; Adresse einem Pseudobefehl zuweisen
+ADR13= $02; Adresse einem Pseudobefehl zuweisen
+ADR14= $02; Adresse einem Pseudobefehl zuweisen
+ADR16= $02; Adresse einem Pseudobefehl zuweisen
+ADR17= $02; Adresse einem Pseudobefehl zuweisen
+ADR18= $02; Adresse einem Pseudobefehl zuweisen
+ADR19= $02; Adresse einem Pseudobefehl zuweisen
+*=$300; Erste Speicheradresse des Programms
 
 		CLD
 		CLC
