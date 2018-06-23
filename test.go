@@ -81,7 +81,7 @@ func main() {
 	var stopAdresse 		uint16
 	var startAdresse 		uint16
 	var startAdressePcHEX 	string = pseudoCodeListe["$t@rt@dre$$e"][0]
-	fmt.Println("startAdressePcHEX",startAdressePcHEX)
+	//fmt.Println("startAdressePcHEX",startAdressePcHEX)
 	var pcHigh 		byte
 	var pcLow 		byte
 	var pcHighOld 	byte
@@ -102,7 +102,7 @@ func main() {
 		switcher = true
 		// Auslesen der einzelnen Elemente eines einzelnen Opcodes
 		for _,value := range opcodeList[k]{
-			fmt.Println(value)
+			//fmt.Println(value)
 			if  switcher{			// Das erste Element speichert die Startadresse und wird daher übersprungen
 				switcher = false
 				continue
@@ -132,7 +132,7 @@ func main() {
 	//for {
 		startAdressePcUINT64, err := strconv.ParseUint(startAdressePcHEX, 16, 16) // Die hexadezimale Adresse wird in eine uint64 
 																				  // konvertiert 
-		fmt.Println("startAdressePcUINT64",startAdressePcUINT64)
+		//fmt.Println("startAdressePcUINT64",startAdressePcUINT64)
 		if err!=nil{
 			panic(err)
 		}
@@ -154,30 +154,27 @@ func main() {
 
 		// Konvertiere byte in uint16
 		opcodeHeadAdresse = binary.BigEndian.Uint16([]byte{pcHigh,pcLow})
-		fmt.Println("Ausgelsen opcodeHeadAdresse",opcodeHeadAdresse)
+			//fmt.Println("Ausgelsen opcodeHeadAdresse",opcodeHeadAdresse)
 		// Lesen der im Programmzähler angegebenen Adresse in Byte
 		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse})  // 
-		fmt.Println("Ausgelesene OpcodeHEAD",hex.EncodeToString(getOpcode))
+			//fmt.Println("Ausgelesene OpcodeHEAD",hex.EncodeToString(getOpcode))
 		// Nachschlagen, wie viele weitere Bytes zum Opcode gehören
 		anzahlOpcodeElemente =  opcodeRegister[hex.EncodeToString(getOpcode)]
-		fmt.Println("Anzahl", anzahlOpcodeElemente)
-		fmt.Println("Opcode", hex.EncodeToString(getOpcode))
-
+			//fmt.Println("Anzahl", anzahlOpcodeElemente)
+			//fmt.Println("Opcode", hex.EncodeToString(getOpcode))
+		// Auslesen des gesamten Opcodes
+		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse+uint16(anzahlOpcodeElemente)-1})  // 
 		opcodeHeadAdresse = opcodeHeadAdresse+uint16(anzahlOpcodeElemente )
-/*
-		if anzahlOpcodeElemente == 1{
-			opcodeHeadAdresse++
-			fmt.Println("---",opcodeHeadAdresse)
-		//opcode.ExecuteOpcode ( getOpcode,speicher64k, x_register,y_register, programmZaehlerHigh,programmZaehlerLow,stapelzeiger, akku, statusbits)
+		opcode.ExecuteOpcode ( 	getOpcode,
+								speicher64k, 
+								x_register,
+								y_register,
+								programmZaehlerHigh,
+								programmZaehlerLow,
+								stapelzeiger, 
+								akku, 
+								statusbits)
 
-		}else if anzahlOpcodeElemente >1 {
-			opcodeHeadAdresse= opcodeHeadAdresse+uint16(anzahlOpcodeElemente)+1
-			fmt.Println("---",opcodeHeadAdresse)
-			//opcode.ExecuteOpcode ( getOpcode,speicher64k, x_register,y_register, programmZaehlerHigh,programmZaehlerLow,stapelzeiger, akku, statusbits)
-		}else{
-			panic("Fehler: Nachschlagen, wie viele weitere Bytes zum Opcode gehören")
-		}
-*/
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
 
@@ -203,7 +200,6 @@ func main() {
 		// <<---------------------------------------------------------------------------------------------------
 
 		// Anzeigen des Y-Registers ----------------------------------------------------------------------------
-/*		_ = y_register.SchreibenByte(byte(12 + i))*/
 		registerYdaten, _ = y_register.LesenByte()
 		gfxElement01.AbbildRegister(1630, 70, "Y-Register", registerYdaten, registerYdatenAlt)
 		registerYdatenAlt = registerYdaten
@@ -213,13 +209,11 @@ func main() {
 		akkuDaten, _ = akku.LesenByte()
 		gfxElement01.AbbildRegister(1630, 100, "Akku", akkuDaten, akkuDatenAlt)
 		akkuDatenAlt = akkuDaten
-		_ = akku.SchreibenByte(byte(2 + i))
 		// <<---------------------------------------------------------------------------------------------------
 		
 		// Label Stapelzeiger-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(1630,130,"Stapelzeiger",24,0,0,255)
 		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
-/*		_ = stapelzeiger.SchreibenByte(byte(15 + i))*/
 		stapelzeigerDaten, _ = stapelzeiger.LesenByte()
 		gfxElement01.AbbildRegister(1630, 160, "SZ", stapelzeigerDaten, stapelzeigerDatenAlt)
 		stapelzeigerDatenAlt = stapelzeigerDaten
@@ -245,12 +239,12 @@ func main() {
 		gfxElement01.AbbildLabel(1630,280,"Flags",24,0,0,255)
 
 		// Anzeigen der Flags  ---------------------------------------------------------------------------------
-		fmt.Println("-------------------------------------------------------------------------------------")
+		//fmt.Println("-------------------------------------------------------------------------------------")
 
 		for  index,flag := range(flags){
 			flagStatusBOOL, _ =statusbits.LeseBit( uint(index))
-			fmt.Println(flagStatusBOOL)	
-			fmt.Println(flag)	
+			//fmt.Println(flagStatusBOOL)	
+			//fmt.Println(flag)	
 			if flagStatusBOOL {
 				flagStatusINT = 1
 			}else{

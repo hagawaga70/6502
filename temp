@@ -1,5 +1,10 @@
-				adresseDez := uint16(int(seite)*256 + i)
-				adresseByte := make([]byte, 2)
-				binary.BigEndian.PutUint16(adresseByte, adresseDez)
-				//labelZeile = "[" + hex.EncodeToString([]byte{Itoa(int(seite)*256 + i)}) + "] " + labelZeile
-				labelZeile = "[" + hex.EncodeToString([]byte(adresseByte)) + "] " + labelZeile
+		opcode.ExecuteOpcode ( 	getOpcode,
+								speicher64k, 
+								x_register,
+								y_register,
+								programmZaehlerHigh,
+								programmZaehlerLow,
+								stapelzeiger, 
+								akku, 
+								statusbits)
+
