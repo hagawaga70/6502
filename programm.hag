@@ -1,21 +1,22 @@
-ADR01= $00; Adresse einem Pseudobefehl zuweisen
-ADR02= $01; Adresse einem Pseudobefehl zuweisen
-ADR03= $02; Adresse einem Pseudobefehl zuweisen
-ADR04= $02; Adresse einem Pseudobefehl zuweisen
-ADR05= $02; Adresse einem Pseudobefehl zuweisen
-ADR06= $02; Adresse einem Pseudobefehl zuweisen
-ADR07= $02; Adresse einem Pseudobefehl zuweisen
-ADR08= $02; Adresse einem Pseudobefehl zuweisen
-ADR09= $02; Adresse einem Pseudobefehl zuweisen
-ADR10= $02; Adresse einem Pseudobefehl zuweisen
-ADR11= $02; Adresse einem Pseudobefehl zuweisen
-ADR12= $02; Adresse einem Pseudobefehl zuweisen
-ADR13= $02; Adresse einem Pseudobefehl zuweisen
-ADR14= $02; Adresse einem Pseudobefehl zuweisen
-ADR16= $02; Adresse einem Pseudobefehl zuweisen
-ADR17= $02; Adresse einem Pseudobefehl zuweisen
-ADR18= $02; Adresse einem Pseudobefehl zuweisen
-ADR19= $02; Adresse einem Pseudobefehl zuweisen
+ADR01	= $00; Adresse einem Pseudobefehl zuweisen
+ADR02	= $01; Adresse einem Pseudobefehl zuweisen
+ADR03	= $02; Adresse einem Pseudobefehl zuweisen
+WERT01	= #$00; Adresse einem Pseudobefehl zuweisen
+WERT02	= #$70; Adresse einem Pseudobefehl zuweisen
+ADR05	= $02; Adresse einem Pseudobefehl zuweisen
+ADR06	= $02; Adresse einem Pseudobefehl zuweisen
+ADR07	= $02; Adresse einem Pseudobefehl zuweisen
+ADR08	= $02; Adresse einem Pseudobefehl zuweisen
+ADR09	= $02; Adresse einem Pseudobefehl zuweisen
+ADR10	= $02; Adresse einem Pseudobefehl zuweisen
+ADR11	= $02; Adresse einem Pseudobefehl zuweisen
+ADR12	= $02; Adresse einem Pseudobefehl zuweisen
+ADR13	= $02; Adresse einem Pseudobefehl zuweisen
+ADR14	= $02; Adresse einem Pseudobefehl zuweisen
+ADR16	= $02; Adresse einem Pseudobefehl zuweisen
+ADR17	= $02; Adresse einem Pseudobefehl zuweisen
+ADR18	= $02; Adresse einem Pseudobefehl zuweisen
+ADR19	= $ff; Adresse einem Pseudobefehl zuweisen
  *=$300; Erste Speicheradresse des Programms
 ;
 
@@ -26,7 +27,8 @@ ADR19= $02; Adresse einem Pseudobefehl zuweisen
 		LDY #$1
 		STX ADR01
 TEST	STY ADR02
-		LDA ADR01
+		LDA WERT01
+		LDA WERT02
 ;		ADC ADR02
 		STA ADR03
 		LDA #$25

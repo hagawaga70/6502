@@ -68,6 +68,19 @@ var dataByte []byte
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = akku.SchreibenByte(dataByte[0]) 
+						_ = statusbits.SetzeBit(0)
+					if (int(dataByte[0]) >> 7) == 1{
+						_ = statusbits.SetzeBit(7)
+					}else{
+						_ = statusbits.SetzeBitZurueck(7)
+					}
+
+					if int(dataByte[0]) == 0{
+						_ = statusbits.SetzeBit(1)
+					}else{
+						_ = statusbits.SetzeBitZurueck(1)
+					}
+
 					programmEnde = false 
  					break 
 
@@ -76,11 +89,36 @@ var dataByte []byte
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = akku.SchreibenByte(dataByte[0]) 
 					programmEnde = false 
+					if (int(dataByte[0]) >> 7) == 1{
+						_ = statusbits.SetzeBit(7)
+					}else{
+						_ = statusbits.SetzeBitZurueck(7)
+					}
+
+					if int(dataByte[0]) == 0{
+						_ = statusbits.SetzeBit(1)
+					}else{
+						_ = statusbits.SetzeBitZurueck(1)
+					}
  					break 
 
 		case "a9":	//LDA unmittelbar 
 					_ = akku.SchreibenByte(opcode[1]) 
+					buffer:=opcode[1]
+					if int(buffer >> 7) == 1{
+						_ = statusbits.SetzeBit(7)
+					}else{
+						_ = statusbits.SetzeBitZurueck(7)
+					}
+
+					buffer=opcode[1]
+					if int(buffer) == 0{
+						_ = statusbits.SetzeBit(1)
+					}else{
+						_ = statusbits.SetzeBitZurueck(1)
+					}
 					programmEnde = false 
+
  					break 
 		//---------------------------------------------------------------------------------------------------
 		case "ae":	//LDX absolut
