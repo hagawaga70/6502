@@ -137,7 +137,7 @@ func main() {
 	var anzahlOpcodeElemente int
 	Fenster(1920, 1200)
 	var pseudoCodeContentSwitch bool 
-	for {
+	for i := 0; i < 8; i++ {
 		
 		pseudoCodeContentSwitch  = true // Wird für die Anzeige der Pseudocodes benötigt
 
@@ -176,16 +176,16 @@ func main() {
 		// Auslesen des gesamten Opcodes
 		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse+uint16(anzahlOpcodeElemente)-1})  // 
 		opcodeHeadAdresse = opcodeHeadAdresse+uint16(anzahlOpcodeElemente )
-		terminate :=opcode.ExecuteOpcode ( 	getOpcode,
-											speicher64k, 
-											x_register,
-											y_register,
-											programmZaehlerHigh,
-											programmZaehlerLow,
-											stapelzeiger, 
-											akku, 
-											statusbits)
-		fmt.Println("terminate", terminate)
+		opcode.ExecuteOpcode ( 	getOpcode,
+								speicher64k, 
+								x_register,
+								y_register,
+								programmZaehlerHigh,
+								programmZaehlerLow,
+								stapelzeiger, 
+								akku, 
+								statusbits)
+
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
 
@@ -200,32 +200,22 @@ func main() {
 		// Label AssemblerCode-------------------------------------------------------------------------
 		fmt.Println("-->",opcodeHeadAdresse-uint16(anzahlOpcodeElemente))
 		fmt.Println("ac",showAssemblerCode)
-		gfxElement01.AbbildLabel(1630,550,"Assembler-Code",24,0,0,255) // alt 10,950
+		gfxElement01.AbbildLabel(1630,550,"Assembler-Code",24,0,0,255)
 		gfxElement01.AbbildLabel(1630,580,strings.Join(showAssemblerCode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
 
 		// Label Opcode-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(1630,610,"Opcode",24,0,0,255)
 		gfxElement01.AbbildLabel(1630,640,strings.Join(showOpcode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
 
-		
-		// Bild Hagawaga-------------------------------------------------------------------------
-		gfxElement01.AbbildBild(10,910,"./images/hagawaga2.bmp")
+
 
 		// Label Pseudocode-------------------------------------------------------------------------
 		gfxElement01.AbbildLabel(400,950,"Pseudocode",24,0,0,255)
 		var counter int
-		var y		uint16 = 980
-		var x		uint16 = 200
+		var y		int16 = 980
+		var x		int16 = -190  
 		var rowElements int =7
-
-		keys := make([]string, 0, len(pseudoCodeListe))
-		for key := range pseudoCodeListe{
-			keys = append(keys, key)
-		}
-		sort.Strings(keys) //sort by key
-		for _, key := range keys {
-
-			list := pseudoCodeListe[key]
+		for key,list := range pseudoCodeListe{
 			if  key == "$t@rt@dre$$e"{
 				continue
 			}
@@ -239,14 +229,14 @@ func main() {
 				y=y+30
 				fmt.Println("x",x)
 				fmt.Println("y",y)
-				gfxElement01.AbbildLabel(400,y,key+"="+list[0],24,0,0,0)
+				gfxElement01.AbbildLabel(400,uint16(y),key+"="+list[0],24,0,0,0)
 				x=400
 				counter=0
 			}else{
 				x=x+200
 				fmt.Println("x",x)
 				fmt.Println("y",y)
-				gfxElement01.AbbildLabel(x,y,key+"="+list[0],24,0,0,0)
+				gfxElement01.AbbildLabel(uint16(x),uint16(y),key+"="+list[0],24,0,0,0)
 				counter++
 			}
 		}
@@ -333,9 +323,6 @@ func main() {
 
 		UpdateAn()
 		TastaturLesen1()
-		if terminate{
-			break
-		}
 		Cls()
 	}
 }

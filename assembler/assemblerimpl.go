@@ -2,8 +2,6 @@ package assembler
 
 import "regexp"
 import ."fmt"
-//import "encoding/hex"
-//import "encoding/binary"
 import "strconv"
 
 
@@ -66,7 +64,7 @@ befehleListe := map[string][]string{
 		"TYA":{}}
 */
 func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
-	var debug bool = false
+	var debug bool = true
 	adresse1Byte1Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})$`)	// - Initialisiere Suchmuster 1 Bit einstellig
 	adresse1Byte2Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 1 Bit zweistellig
 	adresse2Byte3Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit dreistellig
@@ -236,6 +234,27 @@ func (r *impl) TranslateModifyFlags(assemblerCode []string, aktuelleAdresse stri
 	befehleListe := map[string][]string{
 		"CLC":{"18"},
 		"CLD":{"d8"}}
+	optcode 	 = append(optcode, befehleListe[assemblerCode[0]][0]) 			// 
+	adressOffset = len(optcode)													// x Byte bis zur nächsten freien Adresse
+
+	aktuelleAdresseINT, erro := strconv.ParseInt(aktuelleAdresse, 16, 0)
+	if erro != nil {
+
+		optcode = append(optcode, "LDA: Fehler bei der Konvertierung HEX -> INT")	 // 101bbb01 1010 1101
+		err = true
+		adressOffset=0
+	}
+
+	naechsteAdresseINT	:= int(aktuelleAdresseINT) + adressOffset
+	naechsteAdresse		 = strconv.FormatInt(int64(naechsteAdresseINT), 16)
+	return optcode, err, naechsteAdresse
+}
+
+func (r *impl) TranslateEnd(assemblerCode []string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string){
+
+	var adressOffset int
+	befehleListe := map[string][]string{
+		"END":{"f2"}}
 	optcode 	 = append(optcode, befehleListe[assemblerCode[0]][0]) 			// 
 	adressOffset = len(optcode)													// x Byte bis zur nächsten freien Adresse
 

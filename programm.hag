@@ -1,12 +1,12 @@
-ADR1 = $00; Adresse einem Pseudobefehl zuweisen
-ADR2 = $01; Adresse einem Pseudobefehl zuweisen
-ADR3 = $02; Adresse einem Pseudobefehl zuweisen
-ADR4 = $02; Adresse einem Pseudobefehl zuweisen
-ADR5 = $02; Adresse einem Pseudobefehl zuweisen
-ADR6 = $02; Adresse einem Pseudobefehl zuweisen
-ADR7 = $02; Adresse einem Pseudobefehl zuweisen
-ADR8 = $02; Adresse einem Pseudobefehl zuweisen
-ADR9 = $02; Adresse einem Pseudobefehl zuweisen
+ADR01= $00; Adresse einem Pseudobefehl zuweisen
+ADR02= $01; Adresse einem Pseudobefehl zuweisen
+ADR03= $02; Adresse einem Pseudobefehl zuweisen
+ADR04= $02; Adresse einem Pseudobefehl zuweisen
+ADR05= $02; Adresse einem Pseudobefehl zuweisen
+ADR06= $02; Adresse einem Pseudobefehl zuweisen
+ADR07= $02; Adresse einem Pseudobefehl zuweisen
+ADR08= $02; Adresse einem Pseudobefehl zuweisen
+ADR09= $02; Adresse einem Pseudobefehl zuweisen
 ADR10= $02; Adresse einem Pseudobefehl zuweisen
 ADR11= $02; Adresse einem Pseudobefehl zuweisen
 ADR12= $02; Adresse einem Pseudobefehl zuweisen
@@ -16,17 +16,19 @@ ADR16= $02; Adresse einem Pseudobefehl zuweisen
 ADR17= $02; Adresse einem Pseudobefehl zuweisen
 ADR18= $02; Adresse einem Pseudobefehl zuweisen
 ADR19= $02; Adresse einem Pseudobefehl zuweisen
-*=$300; Erste Speicheradresse des Programms
+ *=$300; Erste Speicheradresse des Programms
+;
 
+;
 		CLD
 		CLC
 		LDX #$2
 		LDY #$1
-		STX ADR1
-TEST	STY ADR2
-		LDA ADR1
-;		ADC ADR2
-		STA ADR3
+		STX ADR01
+TEST	STY ADR02
+		LDA ADR01
+;		ADC ADR02
+		STA ADR03
 		LDA #$25
-		·END
+		END
 

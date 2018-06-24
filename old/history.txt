@@ -1,0 +1,43 @@
+ 1415  git add *
+ 1416  git commit -v
+ 1417  git push
+ 1640  git add *
+ 1641  git commit -v
+ 1655  git add *
+ 1656  git commit -v
+ 1770  git add
+ 1771  git add *
+ 1772  git commit -v 
+ 1773  git push
+ 1881  git add *
+ 1882  git commit -v
+ 1883  git push
+ 1897  git add *D
+ 1898  git commit -v
+ 1899  git push
+ 1903  git add *
+ 1904  git commit -v
+ 1905  git push
+ 1910  git add *
+ 1911  git commit -v
+ 1912  git push
+ 1940  git add *
+ 1941  git commit -v
+ 1942  git push
+ 2126  git add *
+ 2127  git commit -v 
+ 2128  git push
+ 2205  git add *
+ 2206  git commit -v
+ 2207  git push
+ 2229  git commit -v
+ 2230  git push
+ 2265  git add *
+ 2267  git commit -v
+ 2268  git push
+ 2273  git add *
+ 2401  git add *
+ 2402  git commit -v
+ 2403  git push
+ 2413  history | grep git
+ 2414  history | grep git >history.txt

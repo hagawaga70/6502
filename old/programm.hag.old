@@ -1,0 +1,17 @@
+ADR1 = $100; Adresse einem Pseudobefehl zuweisen
+ADR2 = $120; Adresse einem Pseudobefehl zuweisen
+ADR3 = $140; Adresse einem Pseudobefehl zuweisen
+*=$600; Erste Speicheradresse des Programms
+
+		CLD
+		CLC
+		LDX #$2
+		LDY #$1
+		STX ADR1
+TEST	STY ADR2
+		LDA ADR1
+		ADC ADR2
+		STA ADA3
+		LDA #$25
+		·END
+

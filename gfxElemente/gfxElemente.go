@@ -18,4 +18,5 @@ type GfxElement interface {
 	AbbildFlag(x1, y1 uint16, label string, flagStatus int, flagStatusAlt int)
 	//----------------------------------------------------------------------------------------------------------
 	AbbildLabel(x1,y1 uint16, label string, schriftGroesse int, r uint8, g uint8, b uint8)
+	AbbildBild(x1,y1 uint16, pfad string)
 }

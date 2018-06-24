@@ -14,4 +14,7 @@ type Assembler interface {
 	// Vor.: -
 	// Erg.:  Die hexadezimale Übersetzung des (CLC,CLD)-Befehls ist zurückgegeben 
 	TranslateModifyFlags(assemblerCode []string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string)
+	// Vor.: -
+	// Erg.:  Die hexadezimale Übersetzung des (END)-Befehls ist zurückgegeben 
+	TranslateEnd(assemblerCode []string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string)
 }

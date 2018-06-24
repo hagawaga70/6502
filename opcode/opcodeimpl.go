@@ -17,118 +17,158 @@ func ExecuteOpcode ( 	opcode 				[]byte,
 						programmZaehlerLow	Register,
 						stapelzeiger		Register, 
 						akku				Register, 
-						statusbits			Register){
+						statusbits			Register)( programmEnde bool){
 
 
 /*
 
 codeArray[0] == "ADC" 
-codeArray[0] == "STA" 
-codeArray[0] == "STY" 
 */
 var opcodeHeadHEX = hex.EncodeToString([]byte{opcode[0]}) 
 var dataAdressUINT16 uint16
 var dataByte []byte
+//var carryBit bool 
 	switch opcodeHeadHEX{
 
+		case "6d":	//ADC absolut
+					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
+					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
+					_ = akku.SchreibenByte(dataByte[0])
+					programmEnde = false 
+ 					break 
+
+		case "65":	//ADC Zero-Page
+					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
+					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
+					_ = akku.SchreibenByte(dataByte[0]) 
+					programmEnde = false 
+ 					break 
+
+		case "69":	//ADC unmittelbar 
+					_ = akku.SchreibenByte(opcode[1]) 
+					programmEnde = false 
+ 					break 
+		//---------------------------------------------------------------------------------------------------
 
 		case "18":	//CLC
 					_ = statusbits.SetzeBitZurueck(0)
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "d8":	//CLD
 					_ = statusbits.SetzeBitZurueck(3)
-					break
+					programmEnde = false 
+ 					break 
+		//---------------------------------------------------------------------------------------------------
+		case "f2":	//·END
+					programmEnde = true 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "ad":	//LDA absolut
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = akku.SchreibenByte(dataByte[0]) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "a5":	//LDA Zero-Page
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = akku.SchreibenByte(dataByte[0]) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "a9":	//LDA unmittelbar 
 					_ = akku.SchreibenByte(opcode[1]) 
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "ae":	//LDX absolut
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = x_register.SchreibenByte(dataByte[0]) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "a6":	//LDX Zero-Page
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = x_register.SchreibenByte(dataByte[0]) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "a2":	//LDX unmittelbar
 					_ = x_register.SchreibenByte(opcode[1]) 
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "ac":	//LDY absolut
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = y_register.SchreibenByte(dataByte[0]) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "a4":	//LDY Zero-Page
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = y_register.SchreibenByte(dataByte[0]) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "a0":	//LDY unmittelbar
 					_ = y_register.SchreibenByte(opcode[1]) 
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "8d":	//STA absolut
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					registerByte , _ :=	akku.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "85":	//STA Zero-Page
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					registerByte , _ :=	akku.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "8e":	//STX absolut
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					registerByte , _ :=	x_register.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "86":	//STX Zero-Page
 					Println("STX Zero",opcode)
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					registerByte , _ :=	x_register.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 		case "8c":	//STY absolut
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					registerByte , _ :=	y_register.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
-					break
+					programmEnde = false 
+ 					break 
 
 		case "84":	//STY Zero-Page
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					registerByte , _ :=	y_register.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
-					break
+					programmEnde = false 
+ 					break 
 		//---------------------------------------------------------------------------------------------------
 
 		default:
 			panic("ADO Opcode:Opcode"+opcodeHeadHEX+" nicht vorhanden")
 	}
+	return
 } 
 
 
@@ -159,7 +199,7 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 	"PHP":{},"PLA":{},"PLP":{},"ROL":{},"ROR":{},"RTI":{},
 	"RTS":{},"SBC":{},"SEC":{},"SED":{},"SEI":{},"STA":{},
 	"STX":{},"STY":{},"TAX":{},"TAY":{},"TSX":{},"TXS":{},
-	"TXA":{},"TYA":{},"·END":{}}
+	"TXA":{},"TYA":{},"END":{}}
 
 
 	// Umwandeln der EINEN Zeichenkette in ein Slice: Das Trennzeichen ist \n (NEWLINE)
@@ -272,8 +312,8 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 
 			 opcode,err,naechsteAdresse = assemble.TranslateModifyFlags(codeArray,startAdresse)
 
-		}else if  	codeArray[0] == "·END" {
-			break
+		}else if  	codeArray[0] == "END" {
+			 opcode,err,naechsteAdresse = assemble.TranslateEnd(codeArray,startAdresse)
 		}else{
 			panic("Der Befehl ist nicht im Befehlssatz vorhanden!!!")
 		}

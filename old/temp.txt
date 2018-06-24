@@ -1,0 +1,5 @@
+			fmt.Println("---------------------------------------------------------------------")
+			fmt.Println("testDateien -opcode -takte")
+			fmt.Println(opcode)
+			fmt.Println(takte)
+			fmt.Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")

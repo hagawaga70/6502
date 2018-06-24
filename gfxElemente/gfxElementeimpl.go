@@ -41,6 +41,9 @@ var (
 	wonb     = flag.Bool("whiteonblack", false, "white text on a black background")
 )
 
+func (gfxElement *impl) AbbildBild(x1, y1 uint16,pfad string) {
+	LadeBild(x1, y1, pfad)
+}
 func (gfxElement *impl) AbbildSpeicherseite(x1, y1 uint16, seite uint, seiteninhalt []byte) {
 	var counter uint
 	var byteBuffer byte
