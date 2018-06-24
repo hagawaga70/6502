@@ -1,6 +1,6 @@
 ADR01	= $00; Adresse einem Pseudobefehl zuweisen
-ADR02	= $01; Adresse einem Pseudobefehl zuweisen
-ADR03	= $02; Adresse einem Pseudobefehl zuweisen
+ADR02	= $200; Adresse einem Pseudobefehl zuweisen
+ADR03	= $200; Adresse einem Pseudobefehl zuweisen
 WERT01	= #$00; Adresse einem Pseudobefehl zuweisen
 WERT02	= #$70; Adresse einem Pseudobefehl zuweisen
 ADR05	= $02; Adresse einem Pseudobefehl zuweisen
@@ -23,13 +23,15 @@ ADR19	= $ff; Adresse einem Pseudobefehl zuweisen
 ;
 		CLD
 		CLC
+		ADC #$1
+		ADC #$2
 		LDX #$2
-		LDY #$1
+		LDY #$FF
 		STX ADR01
 TEST	STY ADR02
 		LDA WERT01
 		LDA WERT02
-;		ADC ADR02
+		ADC ADR02
 		STA ADR03
 		LDA #$25
 		END

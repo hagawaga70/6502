@@ -26,26 +26,66 @@ codeArray[0] == "ADC"
 */
 var opcodeHeadHEX = hex.EncodeToString([]byte{opcode[0]}) 
 var dataAdressUINT16 uint16
+var dataUINT16 uint16
+var akkuInhaltUINT16 uint16
 var dataByte []byte
+var ergebnis uint16
+var akkuInhaltByte byte
 //var carryBit bool 
 	switch opcodeHeadHEX{
 
 		case "6d":	//ADC absolut
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
-					_ = akku.SchreibenByte(dataByte[0])
+					akkuInhaltByte, _ = akku.LesenByte()
+					dataUINT16 = binary.BigEndian.Uint16([]byte{byte(0),dataByte[0]})
+					akkuInhaltUINT16 = binary.BigEndian.Uint16([]byte{byte(0),akkuInhaltByte})
+					ergebnis = dataUINT16 + akkuInhaltUINT16
+					_= akku.SchreibenByte(byte(ergebnis))
+					if ergebnis > 255{
+						_ = statusbits.SetzeBit(0)
+					}else{
+						_ = statusbits.SetzeBitZurueck(0)
+					}
+					akkuInhaltByte, _ = akku.LesenByte()
+					setUnsetNzFlags(akkuInhaltByte,statusbits)
 					programmEnde = false 
  					break 
 
 		case "65":	//ADC Zero-Page
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
-					_ = akku.SchreibenByte(dataByte[0]) 
+
+					akkuInhaltByte, _ = akku.LesenByte()
+					dataUINT16 = binary.BigEndian.Uint16([]byte{byte(0),dataByte[0]})
+					akkuInhaltUINT16 = binary.BigEndian.Uint16([]byte{byte(0),akkuInhaltByte})
+					ergebnis = dataUINT16 + akkuInhaltUINT16
+					_= akku.SchreibenByte(byte(ergebnis))
+					if ergebnis > 255{
+						_ = statusbits.SetzeBit(0)
+					}else{
+						_ = statusbits.SetzeBitZurueck(0)
+					}
+					akkuInhaltByte, _ = akku.LesenByte()
+					setUnsetNzFlags(akkuInhaltByte,statusbits)
+
 					programmEnde = false 
  					break 
 
 		case "69":	//ADC unmittelbar 
-					_ = akku.SchreibenByte(opcode[1]) 
+					akkuInhaltByte, _ = akku.LesenByte()
+					dataUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
+					akkuInhaltUINT16 = binary.BigEndian.Uint16([]byte{byte(0),akkuInhaltByte})
+					ergebnis = dataUINT16 + akkuInhaltUINT16
+					_= akku.SchreibenByte(byte(ergebnis))
+					if ergebnis > 255{
+						_ = statusbits.SetzeBit(0)
+					}else{
+						_ = statusbits.SetzeBitZurueck(0)
+					}
+					akkuInhaltByte, _ = akku.LesenByte()
+					setUnsetNzFlags(akkuInhaltByte,statusbits)
+
 					programmEnde = false 
  					break 
 		//---------------------------------------------------------------------------------------------------
@@ -68,63 +108,30 @@ var dataByte []byte
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = akku.SchreibenByte(dataByte[0]) 
-						_ = statusbits.SetzeBit(0)
-					if (int(dataByte[0]) >> 7) == 1{
-						_ = statusbits.SetzeBit(7)
-					}else{
-						_ = statusbits.SetzeBitZurueck(7)
-					}
-
-					if int(dataByte[0]) == 0{
-						_ = statusbits.SetzeBit(1)
-					}else{
-						_ = statusbits.SetzeBitZurueck(1)
-					}
-
+					setUnsetNzFlags(dataByte[0],statusbits)
 					programmEnde = false 
+
  					break 
 
 		case "a5":	//LDA Zero-Page
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = akku.SchreibenByte(dataByte[0]) 
+					setUnsetNzFlags(dataByte[0],statusbits)
 					programmEnde = false 
-					if (int(dataByte[0]) >> 7) == 1{
-						_ = statusbits.SetzeBit(7)
-					}else{
-						_ = statusbits.SetzeBitZurueck(7)
-					}
-
-					if int(dataByte[0]) == 0{
-						_ = statusbits.SetzeBit(1)
-					}else{
-						_ = statusbits.SetzeBitZurueck(1)
-					}
  					break 
 
 		case "a9":	//LDA unmittelbar 
 					_ = akku.SchreibenByte(opcode[1]) 
-					buffer:=opcode[1]
-					if int(buffer >> 7) == 1{
-						_ = statusbits.SetzeBit(7)
-					}else{
-						_ = statusbits.SetzeBitZurueck(7)
-					}
-
-					buffer=opcode[1]
-					if int(buffer) == 0{
-						_ = statusbits.SetzeBit(1)
-					}else{
-						_ = statusbits.SetzeBitZurueck(1)
-					}
+					setUnsetNzFlags(opcode[1],statusbits)	
 					programmEnde = false 
-
  					break 
 		//---------------------------------------------------------------------------------------------------
 		case "ae":	//LDX absolut
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = x_register.SchreibenByte(dataByte[0]) 
+					setUnsetNzFlags(dataByte[0],statusbits)
 					programmEnde = false 
  					break 
 
@@ -132,11 +139,13 @@ var dataByte []byte
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = x_register.SchreibenByte(dataByte[0]) 
+					setUnsetNzFlags(dataByte[0],statusbits)
 					programmEnde = false 
  					break 
 
 		case "a2":	//LDX unmittelbar
 					_ = x_register.SchreibenByte(opcode[1]) 
+					setUnsetNzFlags(opcode[1],statusbits)	
 					programmEnde = false 
  					break 
 		//---------------------------------------------------------------------------------------------------
@@ -144,6 +153,7 @@ var dataByte []byte
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = y_register.SchreibenByte(dataByte[0]) 
+					setUnsetNzFlags(dataByte[0],statusbits)
 					programmEnde = false 
  					break 
 
@@ -151,11 +161,13 @@ var dataByte []byte
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 					_ = y_register.SchreibenByte(dataByte[0]) 
+					setUnsetNzFlags(dataByte[0],statusbits)
 					programmEnde = false 
  					break 
 
 		case "a0":	//LDY unmittelbar
 					_ = y_register.SchreibenByte(opcode[1]) 
+					setUnsetNzFlags(opcode[1],statusbits) 	
 					programmEnde = false 
  					break 
 		//---------------------------------------------------------------------------------------------------
@@ -207,7 +219,29 @@ var dataByte []byte
 			panic("ADO Opcode:Opcode"+opcodeHeadHEX+" nicht vorhanden")
 	}
 	return
+	
+}
+
+
+
+
+func setUnsetNzFlags(ldByte byte,statusbits	Register){
+	if (int(ldByte) >> 7) == 1{
+		_ = statusbits.SetzeBit(7)
+	}else{
+		_ = statusbits.SetzeBitZurueck(7)
+	}
+
+	if int(ldByte) == 0{
+		_ = statusbits.SetzeBit(1)
+	}else{
+		_ = statusbits.SetzeBitZurueck(1)
+	}
+
 } 
+
+
+
 
 
 func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string][]string){
