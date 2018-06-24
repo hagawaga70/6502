@@ -27,10 +27,14 @@ func main() {
 
 	var gfxElement01 GfxElement = NewGfxElement()
 	//var takte int
-	var speicher1 []byte
-	var speicher2 []byte
-	var speicher3 []byte
-	var speicher4 []byte
+	var speicher1 		[]byte 
+	var speicher1old	[]byte
+	var speicher2	 	[]byte
+	var speicher2old 	[]byte
+	var speicher3 		[]byte
+	var speicher3old 	[]byte
+	var speicher4 		[]byte
+	var speicher4old 	[]byte
 	var registerXdaten byte
 	var registerYdaten byte
 	var registerXdatenAlt byte
@@ -48,7 +52,11 @@ func main() {
 	var counter int
 	var programmPath string = os.Args[1] // Übergabe des Programmpfades
 
-
+	speicher1old,	_ = speicher64k.Lesen([]uint16{0		, 255})
+	speicher2old,	_ = speicher64k.Lesen([]uint16{256		, 511})
+	speicher3old,	_ = speicher64k.Lesen([]uint16{512		, 767})
+	speicher4old,	_ = speicher64k.Lesen([]uint16{768		, 1023})
+	
 	// Öffnen und lesen der Bytes des auszuführenden Programms
 	dateiInhalt := dateien.Oeffnen(programmPath,'l')
 	for !dateiInhalt.Ende(){
@@ -200,12 +208,12 @@ func main() {
 		// Label AssemblerCode-------------------------------------------------------------------------
 		fmt.Println("-->",opcodeHeadAdresse-uint16(anzahlOpcodeElemente))
 		fmt.Println("ac",showAssemblerCode)
-		gfxElement01.AbbildLabel(1630,550,"Assembler-Code",24,0,0,255) // alt 10,950
-		gfxElement01.AbbildLabel(1630,580,strings.Join(showAssemblerCode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
+		gfxElement01.AbbildLabel(1630,670,"Assembler-Code",24,0,0,255) // alt 10,950
+		gfxElement01.AbbildLabel(1630,700,strings.Join(showAssemblerCode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
 
 		// Label Opcode-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,610,"Opcode",24,0,0,255)
-		gfxElement01.AbbildLabel(1630,640,strings.Join(showOpcode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
+		gfxElement01.AbbildLabel(1630,760,"Opcode",24,0,0,255)
+		gfxElement01.AbbildLabel(1630,790,strings.Join(showOpcode[strconv.FormatUint(uint64(opcodeHeadAdresse-uint16(anzahlOpcodeElemente)),16)][:]," "),24,255,0,0)
 
 		
 		// Bild Hagawaga-------------------------------------------------------------------------
@@ -252,11 +260,16 @@ func main() {
 		}
 
 
-		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher1		)	
-		gfxElement01.AbbildSpeicherseite1(411	, 10	, 1		, speicher2		)
-		gfxElement01.AbbildSpeicherseite1(812	, 10	, 2		, speicher3		)
-		gfxElement01.AbbildSpeicherseite1(1213	, 10	, 3		, speicher4		)
-		//time.Sleep(1000000000)
+		gfxElement01.AbbildSpeicherseite1(10	, 10	, 0		, speicher1 ,speicher1old	)	
+		gfxElement01.AbbildSpeicherseite1(411	, 10	, 1		, speicher2	,speicher2old	)
+		gfxElement01.AbbildSpeicherseite1(812	, 10	, 2		, speicher3	,speicher3old	)
+		gfxElement01.AbbildSpeicherseite1(1213	, 10	, 3		, speicher4	,speicher4old	)
+
+		speicher1old = speicher1
+		speicher2old = speicher2
+		speicher3old = speicher3
+		speicher4old = speicher4
+
 
 
 		// Label Register-------------------------------------------------------------------------
@@ -280,31 +293,31 @@ func main() {
 		// <<---------------------------------------------------------------------------------------------------
 		
 		// Label Stapelzeiger-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,130,"Stapelzeiger",24,0,0,255)
+		gfxElement01.AbbildLabel(1630,160,"Stapelzeiger",24,0,0,255)
 		// Anzeigen des Stapelzeigers --------------------------------------------------------------------------
 		stapelzeigerDaten, _ = stapelzeiger.LesenByte()
-		gfxElement01.AbbildRegister(1630, 160, "SZ", stapelzeigerDaten, stapelzeigerDatenAlt)
+		gfxElement01.AbbildRegister(1630, 190, "SZ", stapelzeigerDaten, stapelzeigerDatenAlt)
 		stapelzeigerDatenAlt = stapelzeigerDaten
 		// <<---------------------------------------------------------------------------------------------------
 
-		// Label ProgrammzählerFlags-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,190,"Progammzähler",24,0,0,255)
+		// Label Programmzähler-------------------------------------------------------------------------
+		gfxElement01.AbbildLabel(1630,250,"Progammzähler",24,0,0,255)
 
 		// Anzeigen des Programmzählers ----------------------------------------------------------------------------
 		pcHigh, _ 	= programmZaehlerHigh.LesenByte()
 		pcLow, _ 	= programmZaehlerLow.LesenByte()
 
-		gfxElement01.AbbildRegister(1630, 220, "High", pcHigh, pcHighOld)
+		gfxElement01.AbbildRegister(1630, 280, "High", pcHigh, pcHighOld)
 		pcHighOld = pcHigh
 
-		gfxElement01.AbbildRegister(1630, 250, "Low", pcLow, pcLowOld)
+		gfxElement01.AbbildRegister(1630, 310, "Low", pcLow, pcLowOld)
 		pcLowOld = pcLow
 		// <<---------------------------------------------------------------------------------------------------
 		// <<---------------------------------------------------------------------------------------------------
 
 
 		// Label Flags-------------------------------------------------------------------------
-		gfxElement01.AbbildLabel(1630,280,"Flags",24,0,0,255)
+		gfxElement01.AbbildLabel(1630,370,"Flags",24,0,0,255)
 
 		// Anzeigen der Flags  ---------------------------------------------------------------------------------
 		//fmt.Println("-------------------------------------------------------------------------------------")
@@ -318,7 +331,7 @@ func main() {
 			}else{
 				flagStatusINT = 0
 			}
-			gfxElement01.AbbildFlag(1630, uint16(310+index*30), flag, flagStatusINT, flagStatusAlt[index])
+			gfxElement01.AbbildFlag(1630, uint16(400+index*30), flag, flagStatusINT, flagStatusAlt[index])
 			flagStatusAlt[index]= flagStatusINT
 		}
 		// <<---------------------------------------------------------------------------------------------------

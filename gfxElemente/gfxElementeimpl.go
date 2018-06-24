@@ -148,7 +148,7 @@ func (gfxElement *impl) AbbildSpeicherseite(x1, y1 uint16, seite uint, seiteninh
 	LadeBild(x1, y1, pfad+bmpDateiName)
 }
 
-func (gfxElement *impl) AbbildSpeicherseite1(x1, y1 uint16, seite uint, seiteninhalt []byte) {
+func (gfxElement *impl) AbbildSpeicherseite1(x1, y1 uint16, seite uint, seitenInhalt []byte,seitenInhaltAlt []byte) {
 	var counter uint
 	var byteBuffer byte
 	var startAdresseDerSeite uint16 = uint16(seite) * 256            // Erste Adresse der Seite n
@@ -173,25 +173,37 @@ func (gfxElement *impl) AbbildSpeicherseite1(x1, y1 uint16, seite uint, seitenin
 	binary.BigEndian.PutUint16(adresseStopByte, adresseStopDez) // <-----
 
 	SchreibeFont(19+x1, 60, "Adressb.: ["+hex.EncodeToString(adresseStartByte)+"] - "+"["+hex.EncodeToString(adresseStopByte)+"]")
+	var labelZeileAlt string
+	var byteBufferAlt byte
+
 	for i := 0; i <= 255; i++ {
-		byteBuffer, seiteninhalt = seiteninhalt[0], seiteninhalt[1:]
+		byteBuffer, seitenInhalt = seitenInhalt[0], seitenInhalt[1:]
+		byteBufferAlt, seitenInhaltAlt = seitenInhaltAlt[0], seitenInhaltAlt[1:]
 		zeilenNummer++
 		labelZeile = labelZeile + hex.EncodeToString([]byte{byteBuffer}) + " "
+		labelZeileAlt = labelZeileAlt + hex.EncodeToString([]byte{byteBufferAlt}) + " "
 		counter++
 
 		if counter == 8 {
 			if seite == 0 {
 				labelZeile = "[" + hex.EncodeToString([]byte{byte(0), byte(i)}) + "] " + labelZeile
+				labelZeileAlt = "[" + hex.EncodeToString([]byte{byte(0), byte(i)}) + "] " + labelZeileAlt
 			} else {
 				adresseDez := uint16(int(seite)*256 + i)
 				adresseByte := make([]byte, 2)
 				binary.BigEndian.PutUint16(adresseByte, adresseDez)
 				//labelZeile = "[" + hex.EncodeToString([]byte{Itoa(int(seite)*256 + i)}) + "] " + labelZeile
 				labelZeile = "[" + hex.EncodeToString([]byte(adresseByte)) + "] " + labelZeile
+				labelZeileAlt = "[" + hex.EncodeToString([]byte(adresseByte)) + "] " + labelZeileAlt
 			}
-
+			if labelZeileAlt != labelZeile{
+				Stiftfarbe(255,0,0)
+			}else{
+				Stiftfarbe(0, 5, 2)
+			}
 			SchreibeFont(19+x1, uint16(i*3+85), labelZeile)
 			labelZeile = ""
+			labelZeileAlt = ""
 			counter = 0
 		}
 	}
@@ -254,3 +266,56 @@ func labelanpassung(label string) string {
 	return label
 
 }
+
+/*
+func (gfxElement *impl) AbbildSpeicherseite1(x1, y1 uint16, seite uint, seitenInhalt []byte,seitenInhaltAlt []byte) {
+	var counter uint
+	var byteBuffer byte
+	var startAdresseDerSeite uint16 = uint16(seite) * 256            // Erste Adresse der Seite n
+	var stopAdresseDerSeite uint16 = ((uint16(seite) + 1) * 256) - 1 // Letzte Adresse der Seite n
+	var labelZeile string
+	var zeilenNummer byte = 0x00
+	Stiftfarbe(152, 13, 8)
+	Vollrechteck(x1, y1, 400, 900)
+	Stiftfarbe(217, 222, 226)
+	Vollrechteck(x1+2, y1+2, 396, 896)
+	Stiftfarbe(0, 5, 2)
+	SetzeFont("./font/LiberationMono-Regular.ttf", 20)
+	SchreibeFont(19+x1, 30, "Seite:    "+Itoa(int(seite))) // Schreiben des Textes -> Seite: n
+	// <-----
+
+	adresseStartDez := uint16(startAdresseDerSeite)               // Die dezimale Startadresse wir in ein Byte-Array
+	adresseStartByte := make([]byte, 2)                           // konvertieret
+	binary.BigEndian.PutUint16(adresseStartByte, adresseStartDez) // <-----
+
+	adresseStopDez := uint16(stopAdresseDerSeite)               // Die dezimale Stopadresse wir in ein Byte-Array
+	adresseStopByte := make([]byte, 2)                          // konvertiert
+	binary.BigEndian.PutUint16(adresseStopByte, adresseStopDez) // <-----
+
+	SchreibeFont(19+x1, 60, "Adressb.: ["+hex.EncodeToString(adresseStartByte)+"] - "+"["+hex.EncodeToString(adresseStopByte)+"]")
+	for i := 0; i <= 255; i++ {
+		byteBuffer, seitenInhalt = seitenInhalt[0], seitenInhalt[1:]
+		zeilenNummer++
+		labelZeile = labelZeile + hex.EncodeToString([]byte{byteBuffer}) + " "
+		counter++
+
+		if counter == 8 {
+			if seite == 0 {
+				labelZeile = "[" + hex.EncodeToString([]byte{byte(0), byte(i)}) + "] " + labelZeile
+			} else {
+				adresseDez := uint16(int(seite)*256 + i)
+				adresseByte := make([]byte, 2)
+				binary.BigEndian.PutUint16(adresseByte, adresseDez)
+				//labelZeile = "[" + hex.EncodeToString([]byte{Itoa(int(seite)*256 + i)}) + "] " + labelZeile
+				labelZeile = "[" + hex.EncodeToString([]byte(adresseByte)) + "] " + labelZeile
+			}
+
+			SchreibeFont(19+x1, uint16(i*3+85), labelZeile)
+			labelZeile = ""
+			counter = 0
+		}
+	}
+
+}
+
+*/
