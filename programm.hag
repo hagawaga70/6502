@@ -25,6 +25,8 @@ ADR19	= $ff; Adresse einem Pseudobefehl zuweisen
 		CLC
 		ADC #$1
 		ADC #$2
+;		ADC #$ff
+;		ADC #$00
 		LDX #$2
 		LDY #$FF
 		STX ADR01

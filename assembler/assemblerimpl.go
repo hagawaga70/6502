@@ -14,6 +14,7 @@ func NewAssembler() *impl {
 	return r
 }
 /*
+Noch umzusetzende Befehle: 
 befehleListe := map[string][]string{
 		"AND":{},
 		"ASL":{},
@@ -158,13 +159,28 @@ func check8BitWert(adresse string,pseudoBefehle map[string][]string)(hex []strin
 }
 
 func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]string, aktuelleAdresse string) ( optcode []string, err bool, naechsteAdresse string) {
-	// Entspricht die Syntax der absoluten Addressierung oder der Addressierug der Seite 0
+
 	var adressOffset int
 
-	// Folgende Parameter werden in der Befehlsliste pro Befehl abgelegt
+	// <ADRL> Folgende Parameter werden in der Befehlsliste pro Befehl abgelegt
 	// IMPLIZIT AKKUMULATOR ABSOLUT SEITE0 UNMITTELBAR ABS.X ABS.Y (IND,X) (IND,Y) SEITE0.Y RELATIV INDIREKT
+
 	befehleListe := map[string][]string{
+		"#€°":{	"IMPLIZIT"		,
+				"AKKUMULATOR"	,
+				"ABSOLUT"		,
+				"SEITE0"		,
+				"UNMITTELBAR"	,
+				"ABS.X"			,
+				"ABS.Y"			,
+				"(IND,X)"		,
+				"(IND,Y)"		,
+				"SEITE0.X"		,
+				"SEITE0.Y"		,
+				"RELATIV"		,
+				"INDIREKT"}, 	//Umgesetzt: --11100000---
 		"ADC":{"--","--","6d","65","69","7d","79","61","71","75","--","--","--"}, 	//Umgesetzt: --11100000---
+		"JMP":{"--","--","4c","--","--","--","--","--","--","--","--","--","6c"}, 	//Umgesetzt: --1---------0
 		"LDA":{"--","--","ad","a5","a9","bd","b9","a1","b1","b5","--","--","--"}, 	//Umgesetzt: --11100000---
 		"LDX":{"--","--","ae","a6","a2","--","be","--","--","--","b6","--","--"},	//Umgesetzt: --111-0---0--
 		"LDY":{"--","--","ac","a4","a0","bc","--","--","--","b4","--","--","--"},	//Umgesetzt: --1110---0---
@@ -172,24 +188,30 @@ func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]st
 		"STX":{"--","--","8e","86","--","--","--","--","--","--","96","--","--"}, 	//Umgesetzt: --111----0---
 		"STY":{"--","--","8c","84","--","--","--","--","--","--","94","--","--"}} 	//Umgesetzt: --111----0---
 
-
+	// Überprüft die zum Assemblercode übergebene Konstante oder Adresse. hexa ist ein Slice mit ein oder
+	// zwei Elementen (1 oder zwei Bytes)
 	if hexa,hit := checkAdresse(assemblerCode[1],pseudoBefehle);hit == true{	 
 		// Seite 0
 		if len(hexa)==1{
+			// Bei einer falschen Addressierung wird das Programm beendet
+			if befehleListe[assemblerCode[0]][3] == "--"{
+				panic(assemblerCode[0]+" kann nicht "+befehleListe["#€°"][3]+" addressiert werden!!!")
+			}
 			optcode = append(optcode, befehleListe[assemblerCode[0]][3]) 			// 
 			optcode = append(optcode, hexa[0]) 										// Hexadezimale Zahl ohne Dollarzeichen
 			adressOffset=len(optcode)												// x Byte bis zur nächsten freien Adresse
 
 		// Absolut	
 		}else if len(hexa)==2{
+
+			// Bei einer falschen Addressierung wird das Programm beendet
+			if befehleListe[assemblerCode[0]][2] == "--"{
+				panic(assemblerCode[0]+" kann nicht "+befehleListe["#€°"][2]+" addressiert werden!!!")
+			}
 			optcode = append(optcode, befehleListe[assemblerCode[0]][2]) 			// 
 			optcode = append(optcode, hexa[0])										// Hexadezimale Zahl ohne Dollarzeichen
 			optcode = append(optcode, hexa[1])										// Hexadezimale Zahl ohne Dollarzeichen
 			adressOffset=len(optcode)												// x Byte bis zur nächsten freien Adresse
-
-			//optcode = append(optcode, "Fehler bei der Übersetzung des Befehls LDA")
-			//optcode = append(optcode, "001: Das zweite Byte entspricht nicht der Anforderungen z.B. $0A oder $0a" )
-			//takte = -1
 		}else{
 
 			optcode = append(optcode, "LDA: Fehler der absoluten Addressierung oder der Addressierug der Seite 0 >>"+assemblerCode[1]+"<")	 // 101bbb01 1010 1101
@@ -199,14 +221,19 @@ func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]st
 
 	// Adressierungsart: unmittelbar
 	}else if hexa,hit := check8BitWert(assemblerCode[1],pseudoBefehle);hit == true{	
+
+		// Bei einer falschen Addressierung wird das Programm beendet
+		if befehleListe[assemblerCode[0]][4] == "--"{
+			panic(assemblerCode[0]+" kann nicht "+befehleListe["#€°"][4]+" addressiert werden!!!")
+		}
 		optcode = append(optcode, befehleListe[assemblerCode[0]][4]) 			// 
 		optcode = append(optcode, hexa[0]) 										// Hexadezimale Zahl ohne Dollarzeichen
 		adressOffset=len(optcode)												// x Byte bis zur nächsten freien Adresse
 
-	// Fehlermeldung
+	// Fehlermeldung wenn der Adress- bzw Werteil nicht ausgewertet werden konnte. z.B bei falschen Zeichen!!
 	}else{
 
-		optcode = append(optcode, "LDA: Fehler der unmittelbaren Addressierung  >>"+assemblerCode[1]+"<")	 // 101bbb01 1010 1101
+		optcode = append(optcode, "Fehler bei der  Addressierung  >>"+assemblerCode[1]+"<")	 // 101bbb01 1010 1101
 		err = true
 		adressOffset=0
 	}
@@ -220,7 +247,7 @@ func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]st
 		adressOffset=0
 	}
 
-
+	// Berechnung der nächsten Adresse, die ein opcodeHEAD (erstes Element des opcodes) enthält
 	naechsteAdresseINT	:= int(aktuelleAdresseINT) + adressOffset
 	naechsteAdresse		 = strconv.FormatInt(int64(naechsteAdresseINT), 16)
 

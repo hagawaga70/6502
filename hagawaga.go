@@ -183,7 +183,11 @@ func main() {
 			//fmt.Println("Opcode", hex.EncodeToString(getOpcode))
 		// Auslesen des gesamten Opcodes
 		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse+uint16(anzahlOpcodeElemente)-1})  // 
+		
 		opcodeHeadAdresse = opcodeHeadAdresse+uint16(anzahlOpcodeElemente )
+
+
+
 		terminate :=opcode.ExecuteOpcode ( 	getOpcode,
 											speicher64k, 
 											x_register,

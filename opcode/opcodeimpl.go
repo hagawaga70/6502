@@ -8,7 +8,6 @@ import "strings"
 import ."../assembler"
 import "encoding/hex"
 import "encoding/binary"
-
 func ExecuteOpcode ( 	opcode 				[]byte,
 						speicher64k 		Speicher, 
 						x_register 			Register,
@@ -20,10 +19,7 @@ func ExecuteOpcode ( 	opcode 				[]byte,
 						statusbits			Register)( programmEnde bool){
 
 
-/*
 
-codeArray[0] == "ADC" 
-*/
 var opcodeHeadHEX = hex.EncodeToString([]byte{opcode[0]}) 
 var dataAdressUINT16 uint16
 var dataUINT16 uint16
@@ -35,31 +31,58 @@ var akkuInhaltByte byte
 	switch opcodeHeadHEX{
 
 		case "6d":	//ADC absolut
+					// Wandelt die binäre 16 Bit Adesse in uint16 um
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{opcode[1],opcode[2]})
+
+					// Auslesen des Bytes an der Stelle dataAdressUINT16 des Speichers
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
+
+					// Auslesen des Akku-Bytes
 					akkuInhaltByte, _ = akku.LesenByte()
+
+					// WWandelt den binären Speicherwert in UINT16 um 
 					dataUINT16 = binary.BigEndian.Uint16([]byte{byte(0),dataByte[0]})
+
+					// Wandelt den binären Akkuwert in UINT16 um 
 					akkuInhaltUINT16 = binary.BigEndian.Uint16([]byte{byte(0),akkuInhaltByte})
-					ergebnis = dataUINT16 + akkuInhaltUINT16
+
+					// Addition des Datenwert und des Akkuwerts unter Berücksichtigung des CarryBits
+					if switcher,_ := statusbits.LeseBit(0);switcher{
+						ergebnis = dataUINT16 + akkuInhaltUINT16 + 1
+					}else{
+						ergebnis = dataUINT16 + akkuInhaltUINT16 
+					}
+
+					// Schreiben des Ergebnisses in den Akku
 					_= akku.SchreibenByte(byte(ergebnis))
 					if ergebnis > 255{
 						_ = statusbits.SetzeBit(0)
 					}else{
 						_ = statusbits.SetzeBitZurueck(0)
 					}
+
+					// Auslesen des geänderten Akkuwerts
 					akkuInhaltByte, _ = akku.LesenByte()
+
+					// Setzen des N oder Z Statusbit
 					setUnsetNzFlags(akkuInhaltByte,statusbits)
+
+					// Initialisieren des Rückgabewerts. Das Programm ist noch nicht zu Ende
 					programmEnde = false 
  					break 
 
-		case "65":	//ADC Zero-Page
+		case "65":	//ADC Zero-Page Erklärungen siehe ADC absolut
 					dataAdressUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					dataByte,_ = speicher64k.Lesen([]uint16{dataAdressUINT16,dataAdressUINT16})
 
 					akkuInhaltByte, _ = akku.LesenByte()
 					dataUINT16 = binary.BigEndian.Uint16([]byte{byte(0),dataByte[0]})
 					akkuInhaltUINT16 = binary.BigEndian.Uint16([]byte{byte(0),akkuInhaltByte})
-					ergebnis = dataUINT16 + akkuInhaltUINT16
+					if switcher,_ := statusbits.LeseBit(0);switcher{
+						ergebnis = dataUINT16 + akkuInhaltUINT16 + 1
+					}else{
+						ergebnis = dataUINT16 + akkuInhaltUINT16 
+					}
 					_= akku.SchreibenByte(byte(ergebnis))
 					if ergebnis > 255{
 						_ = statusbits.SetzeBit(0)
@@ -72,11 +95,16 @@ var akkuInhaltByte byte
 					programmEnde = false 
  					break 
 
-		case "69":	//ADC unmittelbar 
+		case "69":	//ADC unmittelbar Erklärungen siehe ADC absolut
+ 
 					akkuInhaltByte, _ = akku.LesenByte()
 					dataUINT16 = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					akkuInhaltUINT16 = binary.BigEndian.Uint16([]byte{byte(0),akkuInhaltByte})
-					ergebnis = dataUINT16 + akkuInhaltUINT16
+					if switcher,_ := statusbits.LeseBit(0);switcher{
+						ergebnis = dataUINT16 + akkuInhaltUINT16 + 1
+					}else{
+						ergebnis = dataUINT16 + akkuInhaltUINT16 
+					}
 					_= akku.SchreibenByte(byte(ergebnis))
 					if ergebnis > 255{
 						_ = statusbits.SetzeBit(0)
@@ -100,8 +128,7 @@ var akkuInhaltByte byte
 					programmEnde = false 
  					break 
 		//---------------------------------------------------------------------------------------------------
-		case "f2":	//·END
-					programmEnde = true 
+		case "f2":	//END
  					break 
 		//---------------------------------------------------------------------------------------------------
 		case "ad":	//LDA absolut
@@ -250,9 +277,9 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 	var codeLine 		string
 	var startAdresse 	string
 	var opcode 			[]string
-	var err				bool	
+	//var err				bool	
 	var naechsteAdresse string
-	var debug bool = false
+	//var debug bool = false
 	//var buffer 				[]byte
 	var counterOpcodeList 	int						// Zeilennummerierung für die opcodeList
 	//var counter 			int
@@ -278,7 +305,8 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 	// Das Array hat am Ende ein Leerzeile mehr als die Programmdatei (Kein Problem)
 	hagCodeArray := strings.Split(hagCode,"\n")
 
-	// Finde führende und abschliessende Leerzeichen
+	// Finde führende und abschliessende Leerzeichen. ACHTUNG: Die regular expression werden erst in der
+	// folgenden Schleife ausgeführt
 	regexLeerzeichen := regexp.MustCompile(`^\s*(.*)\s*$`)
 
 	// Finde  reine Kommentarzeilen
@@ -303,7 +331,8 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 
 
 
-	for _,codeLine = range(hagCodeArray){
+	// "Extraktion der reinen AssebmblerBefehle"
+	for _,codeLine = range(hagCodeArray){  
 		//Println(codeLine)
 
 		// Überspringe leere Zeilen
@@ -353,22 +382,26 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 				panic("001:Die Zuweisung des Pseudocodes entspricht nicht den Anforderungen: z.B ADR1=$1111")
 			}
 		}
-		if debug{
-			Println("---------------------------------------------------------------------")
-			Println("testDateien pseudoBefehleHASH codeLine")
-			Println(pseudoBefehleHASH)
-			Println(codeLine)
-			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
-		}
+
 		codeArray:=strings.Fields(codeLine)
+
+		// Erstellen eine Liste mit dem "bereinigten Assemblercode". Diese Liste wird z.B. dafür genutzt,
+		// um den Assemblercode in der grafischen Ausgabe anzuzeigen.Der Schlüssel der Liste ist die bereinigte
+		// Zeilennummer. Der zum Schlüssel gehörige Wert ist ein Slice mit den Bestandteilen der einzelnen
+		// Assemblercodebestandteile einer Codezeile. Der zum Assemblercode gehörige Opcode wird auch in einer
+		// Liste mit gleichen Schlüsseln abgespeichert. Somit können Assemblercode und Opcode referenziert werden.
+
 		assemblerCodeList[counterOpcodeList] = append(assemblerCodeList[counterOpcodeList],codeArray...)
 
-		// Eine Sprungmarke wird abgespeichert
+		// Eine Sprungmarke mit der dazugehörigen Adresse wird abgespeichert. Im Beispielprogramm wäre das "TEST". 
 		if _, ok := befehleListe[codeArray[0]]; !ok {
 
 			pseudoBefehleHASH[codeArray[0]] = []string{"$"+startAdresse}
 			codeArray = codeArray[1:]
 		}
+
+
+		// Erkennen der Assemblerbefehle <EAB>
 		if			codeArray[0] == "ADC" ||
 					codeArray[0] == "LDA" ||
 					codeArray[0] == "LDX" ||
@@ -377,32 +410,33 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 					codeArray[0] == "STX" ||
 					codeArray[0] == "STY" {
 
-			 opcode,err,naechsteAdresse = assemble.TranslateXXX(codeArray,pseudoBefehleHASH,startAdresse)
+			 // Die Addressierungsmöglichkeiten der Befehle ähneln sich, und können mit der gleichen Methode 
+			 // TranslateXXX in den dazugehörigen Opcode übersetzt.
+			 opcode,_,naechsteAdresse = assemble.TranslateXXX(codeArray,pseudoBefehleHASH,startAdresse)
 
-		}else if 	codeArray[0] == "CLC" ||
+		}else if 	codeArray[0] == "CLC" || 
 					codeArray[0] == "CLD"	{
 
-			 opcode,err,naechsteAdresse = assemble.TranslateModifyFlags(codeArray,startAdresse)
+			// Übersetzung von Assemblerbefehlen die mit den Statusbits arbeiten.
+			 opcode,_,naechsteAdresse = assemble.TranslateModifyFlags(codeArray,startAdresse)
 
 		}else if  	codeArray[0] == "END" {
-			 opcode,err,naechsteAdresse = assemble.TranslateEnd(codeArray,startAdresse)
+
+			 opcode,_,naechsteAdresse = assemble.TranslateEnd(codeArray,startAdresse)
 		}else{
+
+			// Die Benutzung eines nicht zum Befehlssatz gehörenden Befehls wird abgefagen.
 			panic("Der Befehl ist nicht im Befehlssatz vorhanden!!!")
 		}
 
+		// Der zum Assemblercode gehörige Opcode wird auch in einer Liste mit gleichen Schlüsseln 
+        // abgespeichert. Somit können Assemblercode und Opcode referenziert werden.Im Gegensatz
+		// zur AssemblerCodeListe wird hier die aktuelle Adresse des jeweiligen Opcodes gespeichert
 		opcodeList[counterOpcodeList] = []string{startAdresse}
 		opcodeList[counterOpcodeList] = append(opcodeList[counterOpcodeList],opcode...)
 
 		startAdresse = naechsteAdresse
 		counterOpcodeList++
-
-		if debug{
-			Println("---------------------------------------------------------------------")
-			Println("testDateien -opcode -err")
-			Println(opcode)
-			Println(err)
-			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
-		}
     }
 	return opcodeList,assemblerCodeList,pseudoBefehleHASH
 }
