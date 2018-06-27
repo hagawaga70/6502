@@ -1,10 +1,4 @@
-		opcode.ExecuteOpcode ( 	getOpcode,
-								speicher64k, 
-								x_register,
-								y_register,
-								programmZaehlerHigh,
-								programmZaehlerLow,
-								stapelzeiger, 
-								akku, 
-								statusbits)
+// Vor.: -
+// Erg.: Der opcode einer Assemblercodezeile ist in Form eines Slice zurückgegeben. Die nächste Adresse, die einen
+//       OpcodeHEAD speichert ist zurückgegeben
 

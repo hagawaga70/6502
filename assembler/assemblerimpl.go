@@ -64,40 +64,23 @@ befehleListe := map[string][]string{
 		"TXA":{},
 		"TYA":{}}
 */
+// Vor.:  -
+// Erg.: Ein Array mit einem oder zwei Elementen ist zurückgegeben. Dabei handelt es sich um Strings mit hexadezimalen
+// 		 Zahlen. Das Array kann ein oder zwei Elemente haben. Zurückgegeben werden 1-bytige oder 2-bytige Adressen. Die
+//		 Inhalte von Pseudobefehlen/Sprungmarken sind aufgelöst.
+
 func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
-	var debug bool = true
 	adresse1Byte1Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})$`)	// - Initialisiere Suchmuster 1 Bit einstellig
 	adresse1Byte2Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 1 Bit zweistellig
-	adresse2Byte3Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit dreistellig
-	adresse2Byte4Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Bit vierstellig
+	adresse2Byte3Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{1})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Byte dreistellig
+	adresse2Byte4Stellig	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{2})([ABCDEFabcdef0-9]{2})$`)	// - Initialisiere Suchmuster 2 Byte vierstellig
 	//adresse2Byte	:= regexp.MustCompile(`^\$([ABCDEFabcdef0-9]{3,4})$`)	// - Initialisiere Suchmuster 2 Bit
 	adressePCByte	:= regexp.MustCompile(`^([A-Za-z0-9])+$`)			// - Initialisiere Suchmuster PseudoCode
-
-	if debug{
-
-			Println("---------------------------------------------------------------------")
-			Println("assemblerimpl -pseudoBefehle -adresse")
-			Println(pseudoBefehle)
-			Println(adresse)
-			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
-
-	}
 
 
 	// Es wurde ein Pseudocode übergeben
 	if hit= adressePCByte.MatchString(adresse);hit{							// - Ließt den Wert des PseudoCodes aus
 		adresse = pseudoBefehle[adresse][0]									//
-		if debug{Println("assemblerimpl -machtadresse"); Println(adresse);Println("END")}
-	}
-
-
-	if debug{
-
-			Println("---------------------------------------------------------------------")
-			Println("assemblerimpl -adresse")
-			Println(adresse)
-			Println("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°")
-
 	}
 
 	// - Hexadezimaler Wert <= 255 ohne $-Zeichen 1-stellig (die führende Null wird davorgesetzt)
@@ -123,12 +106,14 @@ func checkAdresse(adresse string,pseudoBefehle map[string][]string)(hex []string
 	}
 
 	return
-/*
-																		//   Rückgabewert "true" 
-	hit = adresse1Byte.MatchString(adresse)								// - Wendet Suchmuster an. Wenn es passt ist der 
-																		//   Rückgabewert "true" 
-*/
+
 }
+// Vor.:  -
+// Erg.: Ein Array mit einem  Elementen ist zurückgegeben. Dabei handelt es sich um einen String mit einer hexadezimalen
+// 		 Zahl. Passt der reguläre Ausdruck nicht zum String in der Variablen Adresse ist ein als boolscher Wert ein 
+// 		 false (hit) zurückgegeben. Die
+//		 Inhalte von Pseudobefehlen/Sprungmarken sind aufgelöst.
+
 
 func check8BitWert(adresse string,pseudoBefehle map[string][]string)(hex []string, hit bool){
 
@@ -157,6 +142,8 @@ func check8BitWert(adresse string,pseudoBefehle map[string][]string)(hex []strin
 	//hex = append(hex,adresse)
 	return
 }
+
+
 
 func (r *impl) TranslateXXX(assemblerCode []string,pseudoBefehle map[string][]string, aktuelleAdresse string) ( optcode []string, err bool, naechsteAdresse string) {
 
@@ -261,6 +248,8 @@ func (r *impl) TranslateModifyFlags(assemblerCode []string, aktuelleAdresse stri
 	befehleListe := map[string][]string{
 		"CLC":{"18"},
 		"CLD":{"d8"}}
+
+	// Der opcode besteht nur aus dem OpcodeHEAD
 	optcode 	 = append(optcode, befehleListe[assemblerCode[0]][0]) 			// 
 	adressOffset = len(optcode)													// x Byte bis zur nächsten freien Adresse
 
@@ -280,8 +269,9 @@ func (r *impl) TranslateModifyFlags(assemblerCode []string, aktuelleAdresse stri
 func (r *impl) TranslateEnd(assemblerCode []string, aktuelleAdresse string)(optcode []string, err bool,naechsteAdresse string){
 
 	var adressOffset int
-	befehleListe := map[string][]string{
-		"END":{"f2"}}
+	befehleListe := map[string][]string{"END":{"f2"}}
+	// Das erste Element des Slice assemblerCode enthält den Befehlname
+	Println("ac ",assemblerCode)	
 	optcode 	 = append(optcode, befehleListe[assemblerCode[0]][0]) 			// 
 	adressOffset = len(optcode)													// x Byte bis zur nächsten freien Adresse
 
