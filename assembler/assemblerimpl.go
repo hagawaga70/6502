@@ -1,7 +1,6 @@
 package assembler
 
 import "regexp"
-import ."fmt"
 import "strconv"
 
 
@@ -271,7 +270,6 @@ func (r *impl) TranslateEnd(assemblerCode []string, aktuelleAdresse string)(optc
 	var adressOffset int
 	befehleListe := map[string][]string{"END":{"f2"}}
 	// Das erste Element des Slice assemblerCode enthält den Befehlname
-	Println("ac ",assemblerCode)	
 	optcode 	 = append(optcode, befehleListe[assemblerCode[0]][0]) 			// 
 	adressOffset = len(optcode)													// x Byte bis zur nächsten freien Adresse
 

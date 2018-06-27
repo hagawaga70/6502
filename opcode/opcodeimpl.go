@@ -2,7 +2,6 @@ package opcode
 
 import . "../speicher"
 import . "../register"
-import ."fmt"
 import "regexp"
 import "strings"
 import ."../assembler"
@@ -218,7 +217,6 @@ var akkuInhaltByte byte
  					break 
 
 		case "86":	//STX Zero-Page
-					Println("STX Zero",opcode)
 					dataAdressUINT16  = binary.BigEndian.Uint16([]byte{byte(0),opcode[1]})
 					registerByte , _ :=	x_register.LesenByte() 
 					_ =	speicher64k.Schreiben([]uint16{dataAdressUINT16,dataAdressUINT16},[]byte{registerByte}) 
@@ -249,7 +247,7 @@ var akkuInhaltByte byte
 
 
 
-
+// Setzen und Zurücksetzen der Statusbits N und Z
 func setUnsetNzFlags(ldByte byte,statusbits	Register){
 	if (int(ldByte) >> 7) == 1{
 		_ = statusbits.SetzeBit(7)
@@ -268,7 +266,7 @@ func setUnsetNzFlags(ldByte byte,statusbits	Register){
 
 
 
-
+// Konvertiert die Assemblerbefehle in Opcode
 func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string][]string){
 
 	var assemble Assembler = NewAssembler() 
@@ -331,7 +329,6 @@ func GetOpcodeList(hagCode string)( map[int][]string,map[int][]string,map[string
 
 	// "Extraktion der reinen AssebmblerBefehle"
 	for _,codeLine = range(hagCodeArray){  
-		//Println(codeLine)
 
 		// Überspringe leere Zeilen
 		if ueberspringeLeereZeilen.MatchString(codeLine){
