@@ -21,10 +21,10 @@ ADR19	= $ff; Adresse einem Pseudobefehl zuweisen
 ;
 
 ;
-		CLD
-		CLC
-		ADC #$1
-		ADC #$2
+;		CLD
+;		CLC
+;		ADC #$1
+;		ADC #$2
 ;		ADC #$ff
 ;		ADC #$00
 		LDX #$2
@@ -35,6 +35,6 @@ TEST	STY ADR02
 		LDA WERT02
 		ADC ADR02
 		STA ADR03
-		LDA #$25
+;		LDA #$25
 		END
 

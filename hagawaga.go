@@ -51,7 +51,7 @@ func main() {
 	var buffer  []byte
 	var counter int
 	var programmPath string = os.Args[1] // Übergabe des Programmpfades
-
+	var mainSwitch = true 	// Hauptschalter: Hat er den Wert false, wird das Programm beendet
 	speicher1old,	_ = speicher64k.Lesen([]uint16{0		, 255})
 	speicher2old,	_ = speicher64k.Lesen([]uint16{256		, 511})
 	speicher3old,	_ = speicher64k.Lesen([]uint16{512		, 767})
@@ -146,7 +146,9 @@ func main() {
 	Fenster(1920, 1200)
 	var pseudoCodeContentSwitch bool 
 	for {
-		
+		if !mainSwitch {
+			break
+		}	
 		pseudoCodeContentSwitch  = true // Wird für die Anzeige der Pseudocodes benötigt
 
 		startAdressePcUINT64, err := strconv.ParseUint(startAdressePcHEX, 16, 16) // Die hexadezimale Adresse wird in eine uint64 
@@ -173,10 +175,13 @@ func main() {
 
 		// Konvertiere byte in uint16
 		opcodeHeadAdresse = binary.BigEndian.Uint16([]byte{pcHigh,pcLow})
-			//fmt.Println("Ausgelsen opcodeHeadAdresse",opcodeHeadAdresse)
+		fmt.Println("Ausgelsen opcodeHeadAdresse",opcodeHeadAdresse)
 		// Lesen der im Programmzähler angegebenen Adresse in Byte
 		getOpcode,	_ = speicher64k.Lesen([]uint16{opcodeHeadAdresse, opcodeHeadAdresse})  // 
-			//fmt.Println("Ausgelesene OpcodeHEAD",hex.EncodeToString(getOpcode))
+
+		if hex.EncodeToString(getOpcode)== "f2"{
+			mainSwitch=false
+		}
 		// Nachschlagen, wie viele weitere Bytes zum Opcode gehören
 		anzahlOpcodeElemente =  opcodeRegister[hex.EncodeToString(getOpcode)]
 			//fmt.Println("Anzahl", anzahlOpcodeElemente)
@@ -198,6 +203,9 @@ func main() {
 											stapelzeiger, 
 											akku, 
 											statusbits)
+		if terminate{
+			break
+		}
 		fmt.Println("terminate", terminate)
 		Stiftfarbe(220, 222, 217)      // Hintergrundfarbe des gesamten Bildschirms
 		Vollrechteck(0, 0, 1920, 1200) // Bildschirmhintergrund
@@ -351,9 +359,6 @@ func main() {
 
 		UpdateAn()
 		TastaturLesen1()
-		if terminate{
-			break
-		}
 		Cls()
 	}
 }

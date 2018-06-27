@@ -18,7 +18,6 @@ func ExecuteOpcode ( 	opcode 				[]byte,
 						akku				Register, 
 						statusbits			Register)( programmEnde bool){
 
-Println("ppp",opcode[0])
 var opcodeHeadHEX string = hex.EncodeToString([]byte{opcode[0]}) 
 var dataAdressUINT16 uint16
 var dataUINT16 uint16
